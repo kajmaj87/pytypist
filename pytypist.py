@@ -1,31 +1,22 @@
 #!/home/kajman/projects/pytypist/.pytypist/bin/python
-from pynput import keyboard
-text = "This is some test text"
+import curses
+text = "This is some test text\n"
+n = 0
 
-def on_press(key):
-    try:
-        #print('alphanumeric key {0} pressed'.format( key.char))
-        if key=='a':
-            print('Bravo!')
-    except AttributeError:
-        print('special key {0} pressed'.format( key))
+stdscr = curses.initscr()
+curses.noecho()
+curses.cbreak()
 
-def on_release(key):
-    #print('{0} released'.format( key))
-    if key == keyboard.Key.esc:
-        # Stop listener
-        return False
+stdscr.addstr(text)
+while 1:
+    c = stdscr.getch()
+    if c == ord(text[n]):
+        stdscr.addch(c)
+        n = n + 1
+    elif c == ord('q'):
+        break  # Exit the while()
+    elif c == curses.KEY_HOME:
+        x = y = 0
 
-# Collect events until released
-with keyboard.Listener(
-        on_press=on_press,
-        on_release=on_release) as listener:
-    listener.join()
-
-# ...or, in a non-blocking fashion:
-listener = keyboard.Listener(
-    on_press=on_press,
-    on_release=on_release)
-listener.start()
-while True:
-    sleep.time(0.01)
+curses.nocbreak()
+curses.echo()
