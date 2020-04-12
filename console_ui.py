@@ -6,12 +6,8 @@ class Console_ui:
   
   stage_complete = False
 
-  def on_correct_key(self, key):
+  def write_char(self, key):
     self.stdscr.addch(key.char)
-
-  def on_wrong_key(self, key):
-    self.stdscr.addch(key.char)
-    curses.flash() 
 
   def on_stage_complete(self):
     self.stage_complete = True
@@ -27,7 +23,12 @@ class Console_ui:
     self.stdscr.addstr(text)
     while not self.stage_complete:
       c = self.get_next_key()
-      self.controller.sendKey(Key(c))
+      if ord(c) == ord(curses.erasechar()): 
+          self.controller.sendKey(Key(special='ERASE'))
+          y, x = stdscr.getyx()
+          stdscr.delch(y, x - 1)
+      else:
+          self.controller.sendKey(Key(c))
 
   def loop(self):
       curses.wrapper(self.inner_loop)
