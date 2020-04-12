@@ -15,5 +15,3 @@ class Controller:
         if self.current_text == self.text:
             self.output.on_stage_complete()
 
-    def getCurrentText(self):
-        return self.current_text
