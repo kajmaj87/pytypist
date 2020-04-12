@@ -6,7 +6,7 @@ class Controller:
         self.output = output
 
     def sendKey(self, key):
-        if key == self.text[self.n]:
+        if key.char == self.text[self.n]:
             self.output.on_correct_key(key)
             self.n = self.n + 1
             if self.n == len(self.text):

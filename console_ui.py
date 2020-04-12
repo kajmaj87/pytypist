@@ -1,4 +1,5 @@
 from controller import Controller
+import key
 import curses
 
 class Console_ui:
@@ -15,20 +16,21 @@ class Console_ui:
     self.stdscr.addstr(text)
     
   def on_correct_key(self, key):
-    self.stdscr.addch(key)
+    self.stdscr.addch(key.char)
 
   def on_wrong_key(self, key):
+    self.stdscr.addch(key.char)
     curses.flash() 
 
   def on_stage_complete(self):
     self.stage_complete = True
 
-  def get_next_char(self):
-    return self.stdscr.getch()
+  def get_next_key(self):
+    return self.stdscr.getkey()
 
   def loop(self):
     while not self.stage_complete:
-      c = self.get_next_char()
-      self.controller.sendKey(chr(c))
+      c = self.get_next_key()
+      self.controller.sendKey(Key(c))
     curses.nocbreak()
     curses.echo()
