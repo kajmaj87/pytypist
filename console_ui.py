@@ -21,7 +21,7 @@ class Console_ui:
   def inner_loop(self, stdscr):
     self.stdscr = stdscr
 
-    text = "This is a longer text. Lets count your WPM and other stats."
+    text = "This is a longer text."
     #text = "test"
     self.controller = Controller(text, self) 
     self.stdscr.addstr(text + '\n')

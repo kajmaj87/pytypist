@@ -31,19 +31,18 @@ class StageStats:
             total time: {:0.1f}s 
             time/keypress: {:0.2f}ms
 
-            Accuracy: {:0.2f}%
+            Accuracy: {:0.1f}%
             Correct: {}
             Errors: {}
             Erases: {}
 
             Total WPM: {:0.1f}
             Correct WPM: {:0.1f}""" \
-                    .replace('\s\s+','') \
                     .format(self.total_chars,
                             self.total_presses,
                             self.total_time,
                             self.total_time/self.total_presses*1000,
-                            (self.total_chars - self.errors)/self.total_chars * 100,
+                            self.total_chars/(self.total_chars + self.errors) * 100,
                             self.correct,
                             self.errors,
                             self.erases,

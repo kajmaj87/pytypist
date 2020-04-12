@@ -26,6 +26,6 @@ class Controller:
         if self.current_text == self.text:
             self.output.close()
             self.stats.registerStageEnd()
-            self.output.write("Stage complete.")
+            self.output.write("\nStage complete.\n")
             self.output.write(self.stats.summary())
 
