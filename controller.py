@@ -1,5 +1,6 @@
 from stage_stats import StageStats
 from key_logger import KeyLogger
+from transition_aggregator import TransitionAggregator
 
 class Controller:
     n = 1
@@ -10,6 +11,7 @@ class Controller:
         self.output = output
         self.stats = StageStats(text)
         self.logger = KeyLogger()
+        self.aggregator = TransitionAggregator()
 
     def sendKey(self, key):
         if key.char:
@@ -34,6 +36,7 @@ class Controller:
             self.output.write("\nStage complete.\n")
             self.output.write(self.stats.summary())
             self.output.write("\nKey stats:\n")
-            self.output.write(self.logger.summary())
+#            self.output.write(self.logger.summary())
+            self.output.write(self.aggregator.summary(self.logger.transitions()))
 
 

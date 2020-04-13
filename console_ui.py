@@ -22,6 +22,7 @@ class Console_ui:
     self.stdscr = stdscr
 
     text = "This is a longer text."
+    text = "This is a very long text. It contains a lot of bla bla bla bla and other nonmeaningful words."
     #text = "test"
     self.controller = Controller(text, self) 
     self.stdscr.addstr(text + '\n')
