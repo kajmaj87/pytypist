@@ -6,12 +6,15 @@ class Controller:
     n = 1
     current_text = ""
 
-    def __init__(self, text, output):
+    def __init__(self, output):
+        text = "This is a very long text. It contains a lot of bla bla bla bla and other nonmeaningful words."
+        text = "test"
         self.text = text
         self.output = output
         self.stats = StageStats(text)
         self.logger = KeyLogger()
         self.aggregator = TransitionAggregator()
+        self.output.write(text)
 
     def sendKey(self, key):
         if key.char:

@@ -16,16 +16,12 @@ class Console_ui:
     return self.stdscr.getkey()
 
   def write(self, text):
-    self.stdscr.addstr("\n"+text)
+    self.stdscr.addstr(text+'\n')
 
   def inner_loop(self, stdscr):
     self.stdscr = stdscr
 
-    text = "This is a longer text."
-    text = "This is a very long text. It contains a lot of bla bla bla bla and other nonmeaningful words."
-    #text = "test"
-    self.controller = Controller(text, self) 
-    self.stdscr.addstr(text + '\n')
+    self.controller = Controller(self) 
     while not self.stage_complete:
       c = self.get_next_key()
       if ord(c) == ord(curses.erasechar()): 
