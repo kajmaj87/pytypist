@@ -2,6 +2,7 @@ from stage_stats import StageStats
 from key_logger import KeyLogger
 from transition_aggregator import TransitionAggregator
 from generators import FrequencyBasedGenerator
+from files import create_dict
 
 
 class Controller:
@@ -12,8 +13,8 @@ class Controller:
         text = "This is a very long text. It contains a lot of bla bla bla bla and other nonmeaningful words."
         text = "test"
         self.text = FrequencyBasedGenerator(
-            {"nice": 5, "hi": 1, "test": 2, "hello": 1}
-        ).generateText(10)
+            create_dict("data/python.txt")
+        ).generateText(50)
         self.output = output
         self.stats = StageStats(text)
         self.logger = KeyLogger()
