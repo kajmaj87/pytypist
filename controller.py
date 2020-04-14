@@ -13,8 +13,8 @@ class Controller:
         text = "This is a very long text. It contains a lot of bla bla bla bla and other nonmeaningful words."
         text = "test"
         self.text = FrequencyBasedGenerator(
-            create_dict("data/python.txt")
-        ).generateText(50)
+            create_dict("data/moby-dick.txt")
+        ).generateText(10)
         self.output = output
         self.stats = StageStats(text)
         self.logger = KeyLogger()
