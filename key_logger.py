@@ -1,13 +1,15 @@
 import time
+import log
 from collections import namedtuple
 
 Transition = namedtuple("Transition", ["start", "end", "state", "time"])
 
 
 class KeyLogger:
-
-    first_key = True
-    keys = []
+    def __init__(self):
+        log.debug("Creating keylogger")
+        self.first_key = True
+        self.keys = list()
 
     def extract_to(self, key):
         return key.special if key.special != "" else key.char

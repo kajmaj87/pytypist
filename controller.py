@@ -1,3 +1,4 @@
+import log
 from key_logger import KeyLogger
 from transition_aggregator import TransitionAggregator
 from generators import FrequencyBasedGenerator
@@ -6,22 +7,20 @@ from focus import focus
 
 
 class Controller:
-    n = 1
-    current_text = ""
-
     def __init__(self, output):
-        self.start_next_stage()
         self.output = output
-        self.logger = KeyLogger()
         self.aggregator = TransitionAggregator()
+        self.generator = FrequencyBasedGenerator(
+            focus(create_dict("data/moby-dick.txt"), ";:,./!?-", gain=100)
+        )
+        self.start_next_stage()
         self.output.write(self.text)
 
     def start_next_stage(self):
         self.current_text = ""
-        self.text = FrequencyBasedGenerator(
-            focus(create_dict("data/moby-dick.txt"), ";:,./!?-", gain=100)
-        ).generateText(15)
-        return self.text
+        self.n = 1
+        self.text = self.generator.generateText(15)
+        self.logger = KeyLogger()
 
     def get_stage_text(self):
         return self.text
@@ -41,7 +40,10 @@ class Controller:
 
         if self.current_text == self.text:
             self.output.redraw()
+            save_transitions(self.logger.transitions())
             self.start_next_stage()
-            save_transitions(self.logger.keys)
-            self.output.write("\nKey stats:\n")
+            log.debug("KeyLogger: {}".format(self.logger.transitions()))
+            self.output.write(self.get_stage_text())
+            self.output.write("\n\nKey stats:\n")
             self.output.write(self.aggregator.summary(load_transitions()))
+            self.output.goto_writing_position()

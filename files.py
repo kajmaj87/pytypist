@@ -26,6 +26,8 @@ def create_dict(path):
 
 
 def save_transitions(transitions):
+    log.debug("Saving transitions, len: {}".format(len(transitions)))
+
     def prepare_directory(path):
         if not os.path.exists(path):
             os.makedirs(path)
