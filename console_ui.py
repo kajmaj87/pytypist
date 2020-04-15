@@ -37,10 +37,9 @@ class Console_ui:
                 else:
                     self.controller.sendKey(Key(c))
 
-            self.stdscr.getkey()
             log.debug("Redrawing screen (key: {})".format(c))
             self.stdscr.clear()
-            self.write(self.controller.start_next_stage())
+            self.write(self.controller.get_stage_text())
             self.should_redraw = False
 
     def loop(self):

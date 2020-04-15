@@ -23,6 +23,9 @@ class Controller:
         ).generateText(15)
         return self.text
 
+    def get_stage_text(self):
+        return self.text
+
     def sendKey(self, key):
         if key.char:
             self.current_text += key.char
@@ -38,6 +41,7 @@ class Controller:
 
         if self.current_text == self.text:
             self.output.redraw()
+            self.start_next_stage()
             save_transitions(self.logger.keys)
             self.output.write("\nKey stats:\n")
             self.output.write(self.aggregator.summary(load_transitions()))
