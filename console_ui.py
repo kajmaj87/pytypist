@@ -8,8 +8,11 @@ class Console_ui:
 
     should_redraw = False
 
-    def write_char(self, key):
+    def write_correct_char(self, key):
         self.stdscr.addch(key.char)
+
+    def write_wrong_char(self, key):
+        self.stdscr.addch(key.char, curses.A_STANDOUT)
 
     def redraw(self):
         log.debug("Will redraw screen")

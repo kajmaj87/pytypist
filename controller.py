@@ -28,12 +28,13 @@ class Controller:
     def sendKey(self, key):
         if key.char:
             self.current_text += key.char
-            self.output.write_char(key)
             if self.current_text == self.text[: self.n]:
                 self.logger.log_key(key, "CORRECT")
+                self.output.write_correct_char(key)
                 self.n += 1
             else:
                 self.logger.log_key(key, "ERROR")
+                self.output.write_wrong_char(key)
         elif key.special == "ERASE":
             self.current_text = self.current_text[:-1]
             self.logger.log_key(key, "ERASE")
