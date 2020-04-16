@@ -23,6 +23,32 @@ def test_error(ta):
     state_test_helper(ta, "ERROR", ta.errors)
 
 
+def test_adjusted_keys_should_not_count_first_element(ta):
+    stage_with_correct = [
+        t(s="START", e="s", st="CORRECT", t=0),
+    ]
+    stage_with_error = [
+        t(s="START", e="s", st="ERROR", t=0),
+    ]
+
+    assert {}.items() == ta.adjusted_key_stats(stage_with_error).items()
+    assert {}.items() == ta.adjusted_key_stats(stage_with_correct).items()
+
+
+def test_adjusted_keys_should_not_count_first_error(ta):
+    stage = [
+        t(s="START", e="s", st="ERROR", t=0),
+        t(e="a", st="ERROR", t=50),
+        t(e="x", st="ERASE", t=20),
+        t(e="x", st="ERASE", t=10),
+        t(e="a", st="CORRECT", t=100),
+        t(e="a", st="CORRECT", t=50),
+        t(e="x", st="CORRECT", t=50),
+    ]
+
+    assert {"a": [180, 50], "x": [50]}.items() == ta.adjusted_key_stats(stage).items()
+
+
 def test_correct(ta):
     state_test_helper(ta, "CORRECT", ta.correct)
 

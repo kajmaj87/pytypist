@@ -11,6 +11,20 @@ class TransitionAggregator:
     def errors(self, transitions):
         return sum([1 for t in transitions if t.state == "ERROR"])
 
+    def adjusted_key_stats(self, transitions):
+        result = defaultdict(list)
+        current_time = 0
+        for t in transitions:
+            if t.start == "START":
+                continue
+            if t.state != "CORRECT":
+                current_time += t.time
+            else:
+                result[t.end].append(current_time + t.time)
+                current_time = 0
+
+        return result
+
     def key_presses(self, transitions):
         return len(transitions)
 
@@ -64,7 +78,9 @@ class TransitionAggregator:
             self.errors(transitions),
             self.erases(transitions),
             self.accuracy(transitions),
-            round_dict(self.calculate_stats(self.key_stats(transitions), min)),
-            round_dict(self.calculate_stats(self.key_stats(transitions), mean)),
-            round_dict(self.calculate_stats(self.key_stats(transitions), max)),
+            round_dict(self.calculate_stats(self.adjusted_key_stats(transitions), min)),
+            round_dict(
+                self.calculate_stats(self.adjusted_key_stats(transitions), mean)
+            ),
+            round_dict(self.calculate_stats(self.adjusted_key_stats(transitions), max)),
         )
