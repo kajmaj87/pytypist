@@ -34,7 +34,7 @@ def save_transitions(transitions):
             os.makedirs(path)
 
     def current_timestamp():
-        return str(datetime.now())
+        return str(round(datetime.now().timestamp()))
 
     prepare_directory(transition_path)
     with open(os.path.join(transition_path, current_timestamp()), "w") as f:
