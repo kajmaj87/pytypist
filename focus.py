@@ -2,6 +2,31 @@ import log
 from collections import defaultdict
 
 
+def calculate_main_focus(errors, threshold=3):
+    candidates = [e for e in errors.replace(" ", "") if errors.count(e) >= threshold]
+    if len(candidates) > 0:
+        return sorted(
+            sorted(candidates), key=lambda l: candidates.count(l), reverse=True
+        )[0]
+    else:
+        return ""
+
+
+def calculate_secondary_focus(errors, threshold=2, amount=3):
+    result = ""
+    candidates = [e for e in errors.replace(" ", "") if errors.count(e) >= threshold]
+    if len(candidates) > 0:
+        candidates = sorted(
+            sorted(candidates), key=lambda l: candidates.count(l), reverse=True
+        )
+    for c in candidates:
+        if c not in result:
+            result += c
+        if len(result) == amount:
+            return result
+    return result
+
+
 def focus(dictonary, main="", secondary="", gain=10):
     has_main_letter = lambda t: any([l in t for l in main]) or len(main) == 0
     has_secondary_letter = lambda t: any([l in t for l in secondary])

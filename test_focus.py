@@ -1,6 +1,6 @@
 import pytest
 
-from focus import focus, probabilities
+from focus import focus, probabilities, calculate_main_focus, calculate_secondary_focus
 
 
 def test_main_focus():
@@ -21,6 +21,18 @@ def test_secondary_focus_should_add_bonuses():
 def test_both_focuses():
     d = {"alex": 1, "benny": 2, "cleve": 3}
     assert {"alex": 1, "cleve": 15} == focus(d, main="ac", secondary="c", gain=5)
+
+
+def test_calculate_secondary_focus():
+    assert "xyz" == calculate_secondary_focus("yyyyaabcxxxxxzzz")
+
+
+def test_calculate_secondary_focus_less_than_amount():
+    assert "x" == calculate_secondary_focus("xxxx", amount=2)
+
+
+def test_calculate_secondary_focus_less_than_threshold():
+    assert "xz" == calculate_secondary_focus("xxxxzzabc", threshold=2)
 
 
 def test_probabilities_simple():

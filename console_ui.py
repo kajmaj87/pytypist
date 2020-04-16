@@ -37,7 +37,7 @@ class Console_ui:
                 self.controller.sendKey(Key(special="ERASE"))
                 y, x = stdscr.getyx()
                 stdscr.delch(y, x - 1)
-            else:
+            elif ord(c) not in [ord("\n"), curses.KEY_ENTER]:
                 self.controller.sendKey(Key(c))
 
     def loop(self):
