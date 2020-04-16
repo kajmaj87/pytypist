@@ -43,7 +43,6 @@ class Controller:
             self.output.redraw()
             save_transitions(self.logger.transitions())
             self.start_next_stage()
-            log.debug("KeyLogger: {}".format(self.logger.transitions()))
             self.output.write(self.get_stage_text())
             self.output.write("\n\nKey stats:\n")
             self.output.write(self.aggregator.summary(load_transitions()))

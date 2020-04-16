@@ -15,7 +15,6 @@ class Console_ui:
         self.stdscr.addch(key.char, curses.A_STANDOUT)
 
     def redraw(self):
-        log.debug("Will redraw screen")
         self.stdscr.clear()
 
     def goto_writing_position(self):
@@ -32,7 +31,6 @@ class Console_ui:
 
         self.controller = Controller(self)
         c = ""
-        log.debug("Redraw: {}".format(self.should_redraw))
         while c != "`":  # main loops waits for Ctrl+C
             c = self.get_next_key()
             if ord(c) == ord(curses.erasechar()):

@@ -7,7 +7,6 @@ Transition = namedtuple("Transition", ["start", "end", "state", "time"])
 
 class KeyLogger:
     def __init__(self):
-        log.debug("Creating keylogger")
         self.first_key = True
         self.keys = list()
 
