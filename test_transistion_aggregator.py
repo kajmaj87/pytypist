@@ -19,8 +19,14 @@ def test_stages(ta):
     assert ta.stages(two_stages) == 2
 
 
-def test_error(ta):
-    state_test_helper(ta, "ERROR", ta.errors)
+def test_error_simple(ta):
+    stage = prepare_stage("abcd", "ac<bcx<d")
+    assert ta.errors(stage) == 2
+
+
+def test_error_multiple_consecutive(ta):
+    stage = prepare_stage("abcd", "acbd<<<bcx<d")
+    assert ta.errors(stage) == 2
 
 
 def test_adjusted_keys_should_not_count_first_element(ta):
@@ -45,8 +51,27 @@ def test_adjusted_keys_should_not_count_first_error(ta):
         t(e="a", st="CORRECT", t=50),
         t(e="x", st="CORRECT", t=50),
     ]
-
     assert {"a": [180, 50], "x": [50]}.items() == ta.adjusted_key_stats(stage).items()
+
+
+def test_last_real_errors(ta):
+    stage = prepare_stage("ax", "ab<x")
+    assert "x" == ta.last_errors(stage)
+
+
+def test_last_real_errors_big(ta):
+    stage = prepare_stage("abccc", "axyz<<<bx<cxx<d<<cc")
+    assert "bcc" == ta.last_errors(stage)
+
+
+def test_last_real_errors_big_with_limit(ta):
+    stage = prepare_stage("abccc", "axyz<<<bx<cxx<d<<cc")
+    assert "bc" == ta.last_errors(stage, max_errors=2)
+
+
+def test_last_real_errors_with_consecutive_corrections_and_typo_on_correct(ta):
+    stage = prepare_stage("abcd", "acbd<<<bcx<d")
+    assert "bd" == ta.last_errors(stage)
 
 
 def test_correct(ta):
@@ -87,6 +112,105 @@ def test_calculate_stats(ta):
     stats = {"a": [50, 100], "x": [20, 10]}
     assert {"a": 75, "x": 15}.items() == ta.calculate_stats(stats, mean).items()
     assert {"a": 100, "x": 20}.items() == ta.calculate_stats(stats, max).items()
+
+
+def test_time_spent_on_errors(ta):
+    stages = prepare_stage("abc", "ac<bd<c", key_time=100)
+    assert 0.4 == ta.time_fixing_errors(stages)
+
+
+def test_total_time_spent(ta):
+    stages = prepare_stage("abc", "ac<bd<c", key_time=100)
+    assert 0.7 == ta.total_time(stages)
+
+
+def test_time_if_without_errors(ta):
+    stages = prepare_stage("abc", "ac<bd<c", key_time=100)
+    assert 0.3 == round(ta.time_if_without_errors(stages), 1)
+
+
+def test_prepare_stage_onechar():
+    stages = prepare_stage("a", "a")
+    assert stages == [t(s="START", e="a", st="CORRECT", t=10)]
+
+
+def test_prepare_stage_with_correction_simple():
+    stages = prepare_stage("ax", "ab<x")
+    assert stages == [
+        t(s="START", e="a", st="CORRECT", t=10),
+        t(s="a", e="b", st="ERROR", t=10),
+        t(s="b", e="ERASE", st="ERASE", t=10),
+        t(s="ERASE", e="x", st="CORRECT", t=10),
+    ]
+
+
+def test_prepare_stage_with_two_typos_should_not_mark_second_as_correct():
+    stages = prepare_stage("abc", "acb")
+    assert stages == [
+        t(s="START", e="a", st="CORRECT", t=10),
+        t(s="a", e="c", st="ERROR", t=10),
+        t(s="c", e="b", st="ERROR", t=10),
+    ]
+
+
+def test_prepare_stage_with_correction():
+    stages = prepare_stage("abc", "ac<bc")
+    assert stages == [
+        t(s="START", e="a", st="CORRECT", t=10),
+        t(s="a", e="c", st="ERROR", t=10),
+        t(s="c", e="ERASE", st="ERASE", t=10),
+        t(s="ERASE", e="b", st="CORRECT", t=10),
+        t(s="b", e="c", st="CORRECT", t=10),
+    ]
+
+
+def test_prepare_stage_with_consecutive_typos_one_of_them_on_correct_place():
+    stages = prepare_stage("abc", "acc<<bc")
+    assert stages == [
+        t(s="START", e="a", st="CORRECT", t=10),
+        t(s="a", e="c", st="ERROR", t=10),
+        t(s="c", e="c", st="ERROR", t=10),
+        t(s="c", e="ERASE", st="ERASE", t=10),
+        t(s="ERASE", e="ERASE", st="ERASE", t=10),
+        t(s="ERASE", e="b", st="CORRECT", t=10),
+        t(s="b", e="c", st="CORRECT", t=10),
+    ]
+
+
+def prepare_stage(stage_text, written_text, delete_char="<", key_time=10):
+    first_key = True
+    result = []
+    char_in_text = 1
+    check_chars = (
+        lambda x, y: "CORRECT" if x == y else "ERASE" if l == delete_char else "ERROR"
+    )
+    transform_erase = lambda x: "ERASE" if x == delete_char else x
+    last_key = "START"
+    current_text = ""
+    for l in written_text:
+        if l == delete_char:
+            current_text = current_text[:-1]
+            state = "ERASE"
+        else:
+            current_text += l
+            if current_text == stage_text[:char_in_text]:
+                state = "CORRECT"
+                char_in_text += 1
+            else:
+                state = "ERROR"
+        result.append(
+            t(s=transform_erase(last_key), e=transform_erase(l), st=state, t=key_time)
+        )
+        last_key = l
+
+    # state = check_chars(l, stage_text[char_in_text])
+    # result.append(
+    #     t(s=transform_erase(last_key), e=transform_erase(l), st=state, t=key_time,)
+    # )
+    # last_key = l
+    # char_in_text += 1 if state == "CORRECT" else 0
+
+    return result
 
 
 def t(s="", e="", st="", t=0):

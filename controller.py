@@ -45,5 +45,5 @@ class Controller:
             self.start_next_stage()
             self.output.write(self.get_stage_text())
             self.output.write("\n\nKey stats:\n")
-            self.output.write(self.aggregator.summary(load_transitions()))
+            self.output.write(self.aggregator.summary(load_transitions()[-1000:]))
             self.output.goto_writing_position()
