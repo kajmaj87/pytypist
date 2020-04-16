@@ -16,13 +16,14 @@ def create_dict(path):
     d = defaultdict(int)
     log.debug("Starting dictionary processing")
     for file_path in glob(os.path.join(path + "/*")):
+        log.debug("Processing {}".format(file_path))
         with open(file_path) as fp:
             for line in fp:
                 line = fp.readline()
                 tokens = line.split()
                 for t in tokens:
                     d[t] += 1
-    log.debug({k: v for k, v in sorted(d.items(), key=lambda item: -item[1])})
+    # log.debug({k: v for k, v in sorted(d.items(), key=lambda item: -item[1])})
     return d
 
 
