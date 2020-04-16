@@ -15,7 +15,7 @@ def create_dict(path):
     """
     d = defaultdict(int)
     log.debug("Starting dictionary processing")
-    for file_path in glob(path + "/*"):
+    for file_path in glob(os.path.join(path + "/*")):
         with open(file_path) as fp:
             for line in fp:
                 line = fp.readline()
