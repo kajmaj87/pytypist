@@ -12,7 +12,7 @@ class Controller:
     def __init__(self, output):
         self.output = output
         self.aggregator = TransitionAggregator()
-        self.dictonary = create_dict("data/moby-dick.txt")
+        self.dictonary = create_dict("data/dictionaries")
         self.generator = FrequencyBasedGenerator(self.dictonary)
         self.start_next_stage()
 
