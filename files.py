@@ -37,12 +37,12 @@ def save_transitions(transitions):
         return str(datetime.now())
 
     prepare_directory(transition_path)
-    with open(transition_path + "/" + current_timestamp(), "w") as f:
+    with open(os.path.join(transition_path, current_timestamp()), "w") as f:
         json.dump(transitions, f, indent=2)
 
 
 def load_transitions():
-    files = [f for f in glob(transition_path + "/*")]
+    files = [f for f in glob(os.path.join(*transition_path.split("/"), "*"))]
     transitions = []
     for f in files:
         with open(f) as current:
