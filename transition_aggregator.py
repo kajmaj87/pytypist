@@ -36,19 +36,16 @@ class TransitionAggregator:
         """
         original_error = False
         result = ""
-        log.debug(transitions)
         for t in transitions:
             if t.state == "ERROR" and not original_error:
                 original_error = True
             if t.state == "CORRECT" and original_error:
                 original_error = False
-                log.debug("Adding error based on: {}".format(t))
                 result += t.end
         if max_errors is not None:
             limit = min(max_errors, len(result))
         else:
             limit = len(result)
-        log.debug("Errors: {}".format(result))
         return result[:limit]
 
     def key_presses(self, transitions):
@@ -98,6 +95,9 @@ class TransitionAggregator:
             result[k] = aggregate(v)
         return result
 
+    def wpm(self, transitions):
+        return self.correct(transitions) / self.total_time(transitions) * 60 / 5
+
     def summary(self, transitions):
         def round_dict(d):
             result = {}
@@ -108,15 +108,23 @@ class TransitionAggregator:
         errors = self.last_errors(transitions)
         return """Aggregations:
             Stages:             {}
+
             Key presses:        {}
             Correct:            {}
             Errors:             {}
             Erases:             {}
+
+            WPM:                {:.1f}
+            WPM if w/o error:   {:.1f} (if you typed at your current speed but without errors)
+            Least perfect WPM:  {:.1f} (if you typed without error, but slower, this will be enough to reach your speed)
+
             Total time:         {:.1f}s
             Time fixing errors: {:.1f}s
             Time w/o error:     {:.1f}s
+
             Accuracy:           {:.1f}%
             Time Accuracy:      {:.1f}%  (% time spent on correct chars)
+
             Last Errors:        {}
            """.format(
             self.stages(transitions),
@@ -124,6 +132,14 @@ class TransitionAggregator:
             self.correct(transitions),
             len(self.last_errors(transitions)),
             self.erases(transitions),
+            self.wpm(transitions),
+            self.correct(transitions)
+            / self.time_if_without_errors(transitions)
+            * 60
+            / 5,
+            self.time_if_without_errors(transitions)
+            / self.total_time(transitions)
+            * (self.correct(transitions) / self.total_time(transitions) * 60 / 5),
             self.total_time(transitions),
             self.time_fixing_errors(transitions),
             self.time_if_without_errors(transitions),
@@ -132,6 +148,10 @@ class TransitionAggregator:
             / self.total_time(transitions)
             * 100,
             "".join(
-                sorted(sorted(errors), key=lambda l: errors.count(l), reverse=True)
+                sorted(
+                    sorted(errors.replace(" ", "")),
+                    key=lambda l: errors.count(l),
+                    reverse=True,
+                )
             ),
         )
