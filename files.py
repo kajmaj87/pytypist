@@ -21,6 +21,7 @@ def create_dict(path):
             for line in fp:
                 line = fp.readline()
                 tokens = line.split()
+                log.debug("Processing line ({} tokens): {}".format(len(tokens), line))
                 for t in tokens:
                     d[t] += 1
     # log.debug({k: v for k, v in sorted(d.items(), key=lambda item: -item[1])})
