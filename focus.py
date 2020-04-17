@@ -1,30 +1,33 @@
 import log
+import random
 from collections import defaultdict
 
 
-def calculate_main_focus(errors, threshold=3):
-    candidates = [e for e in errors.replace(" ", "") if errors.count(e) >= threshold]
-    if len(candidates) > 0:
-        return sorted(
-            sorted(candidates), key=lambda l: candidates.count(l), reverse=True
-        )[0]
-    else:
-        return ""
+def calculate_main_focus(errors, threshold=1):
+    candidates_squared = [
+        [e] * errors.count(e)
+        for e in errors.replace(" ", "")
+        if errors.count(e) >= threshold
+    ]
+    candidates = [item for sublist in candidates_squared for item in sublist]
+    candidates.append("")
+    return random.choice(candidates)
 
 
-def calculate_secondary_focus(errors, threshold=2, amount=3):
-    result = ""
-    candidates = [e for e in errors.replace(" ", "") if errors.count(e) >= threshold]
-    if len(candidates) > 0:
-        candidates = sorted(
-            sorted(candidates), key=lambda l: candidates.count(l), reverse=True
-        )
-    for c in candidates:
-        if c not in result:
-            result += c
-        if len(result) == amount:
-            return result
-    return result
+# if len(candidates) > 0:
+#     return sorted(
+#         sorted(candidates), key=lambda l: candidates.count(l), reverse=True
+#     )[0]
+# else:
+#     return ""
+
+
+def calculate_secondary_focus(keys):
+    # letters that appeared the least often
+    candidates = [k[0] for k in sorted(keys.items(), key=lambda x: len(x[1]))]
+    log.debug(candidates)
+    log.debug(sorted(keys.items(), key=lambda x: len(x[1])))
+    return "".join(candidates[:5])
 
 
 def focus(dictonary, main="", secondary="", gain=10):

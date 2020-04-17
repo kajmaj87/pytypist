@@ -29,6 +29,36 @@ class TransitionAggregator:
 
         return result
 
+    def total_time_for_keys(self, transitions):
+        return {
+            k: sum(v) / 1000
+            for k, v in sorted(
+                self.adjusted_key_stats(transitions).items(),
+                key=lambda x: sum(x[1]),
+                reverse=True,
+            )
+        }
+
+    def total_error_time_for_keys(self, transitions):
+        total_correct_time = self.key_stats(transitions, lambda x: x.state == "CORRECT")
+        total_time = {
+            k: v
+            for k, v in self.total_time_for_keys(transitions).items()
+            if len(total_correct_time[k]) >= 5
+        }
+
+        total_error_time = {
+            k: v / (sum(total_correct_time[k]) / 1000)
+            for k, v in total_time.items()
+            if v > 0
+        }
+        return {
+            k: v
+            for k, v in sorted(
+                total_error_time.items(), key=lambda x: x[1], reverse=True
+            )
+        }
+
     def last_errors(self, transitions, max_errors=None):
         """
         Gives back sorted string of length max_errors (or all of it if ommited).
@@ -126,6 +156,7 @@ class TransitionAggregator:
             Time Accuracy:      {:.1f}%  (% time spent on correct chars)
 
             Last Errors:        {}
+            Longest Errors:     {}
            """.format(
             self.stages(transitions),
             self.key_presses(transitions),
@@ -154,4 +185,5 @@ class TransitionAggregator:
                     reverse=True,
                 )
             ),
+            self.total_error_time_for_keys(transitions),
         )

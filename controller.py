@@ -5,7 +5,7 @@ from generators import FrequencyBasedGenerator
 from files import create_dict, save_transitions, load_transitions
 from focus import focus, calculate_main_focus, calculate_secondary_focus
 
-MAX_TRANSITIONS = 1000
+MAX_TRANSITIONS = 5000
 
 
 class Controller:
@@ -34,10 +34,10 @@ class Controller:
         self.n = 1
         main_focus = calculate_main_focus(self.aggregator.last_errors(transitions))
         secondary_focus = calculate_secondary_focus(
-            self.aggregator.last_errors(transitions)
+            self.aggregator.key_stats(transitions, lambda x: x.state == "CORRECT")
         )
         self.generator = FrequencyBasedGenerator(
-            focus(self.dictonary, main_focus, secondary_focus)
+            focus(self.dictonary, main_focus, secondary_focus, gain=100)
         )
         self.text = self.generator.generateText(stage_lenght)
         self.logger = KeyLogger()
