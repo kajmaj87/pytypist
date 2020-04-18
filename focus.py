@@ -1,6 +1,7 @@
 import log
 import random
 from collections import defaultdict
+from transition_aggregator import TransitionAggregator
 
 
 def calculate_main_focus(errors, threshold=1):
@@ -14,20 +15,20 @@ def calculate_main_focus(errors, threshold=1):
     return random.choice(candidates)
 
 
-# if len(candidates) > 0:
-#     return sorted(
-#         sorted(candidates), key=lambda l: candidates.count(l), reverse=True
-#     )[0]
-# else:
-#     return ""
+def calculate_main_focus_transitions(transitions):
+    p95 = TransitionAggregator().p95_for_keys(transitions)
+    if len(p95) > 0:
+        return max(p95.items(), key=lambda x: x[1])[0]
+    else:
+        return ""
 
 
-def calculate_secondary_focus(keys):
+def calculate_secondary_focus(keys, limit=5):
     # letters that appeared the least often
     candidates = [k[0] for k in sorted(keys.items(), key=lambda x: len(x[1]))]
     log.debug(candidates)
     log.debug(sorted(keys.items(), key=lambda x: len(x[1])))
-    return "".join(candidates[:5])
+    return "".join(candidates[:limit])
 
 
 def focus(dictonary, main="", secondary="", gain=10):
@@ -39,9 +40,13 @@ def focus(dictonary, main="", secondary="", gain=10):
         for k, v in dictonary.items()
         if has_main_letter(k)
     }
-    assert (
-        len(result) > 0
-    ), "Dictonary is empty after applying main focus. Provide bigger dictonary or less restrictive focus"
+    if len(result) == 0:
+        log.warn(
+            "Dictonary is empty after applying main focus [{}]. Returning full dictionary.".format(
+                main
+            )
+        )
+        return dictonary
     log.debug("Probabilities: {}".format(probabilities(result)))
     return result
 

@@ -3,7 +3,12 @@ from key_logger import KeyLogger
 from transition_aggregator import TransitionAggregator
 from generators import FrequencyBasedGenerator
 from files import create_dict, save_transitions, load_transitions
-from focus import focus, calculate_main_focus, calculate_secondary_focus
+from focus import (
+    focus,
+    calculate_main_focus,
+    calculate_main_focus_transitions,
+    calculate_secondary_focus,
+)
 
 MAX_TRANSITIONS = 5000
 
@@ -12,7 +17,7 @@ class Controller:
     def __init__(self, output):
         self.output = output
         self.aggregator = TransitionAggregator()
-        self.dictonary = create_dict("data/dictionaries")
+        self.dictonary = create_dict("data/dictionaries", lambda x: x.lower())
         self.generator = FrequencyBasedGenerator(self.dictonary)
         self.start_next_stage()
 
@@ -32,9 +37,9 @@ class Controller:
         log.debug("Stage lenght will be: {}".format(stage_lenght))
         self.current_text = ""
         self.n = 1
-        main_focus = calculate_main_focus(self.aggregator.last_errors(transitions))
+        main_focus = calculate_main_focus_transitions(transitions)
         secondary_focus = calculate_secondary_focus(
-            self.aggregator.key_stats(transitions, lambda x: x.state == "CORRECT")
+            self.aggregator.key_stats(transitions, lambda x: x.state == "CORRECT"), 10
         )
         self.generator = FrequencyBasedGenerator(
             focus(self.dictonary, main_focus, secondary_focus, gain=100)

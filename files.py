@@ -9,7 +9,7 @@ from datetime import datetime
 transition_path = "stats/transitions"
 
 
-def create_dict(path):
+def create_dict(path, mapper=lambda x: x):
     """
     Creates a dictonary with word frequency based from all files in path
     """
@@ -21,7 +21,7 @@ def create_dict(path):
                 line = fp.readline()
                 tokens = line.split()
                 for t in tokens:
-                    d[t] += 1
+                    d[mapper(t)] += 1
     log.debug("Done dictonary procesing")
     return d
 

@@ -2,3 +2,5 @@
 __pycache__
 debug.log
 stats/
+data/dictionaries
+data/archive

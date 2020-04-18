@@ -1,6 +1,6 @@
 import log
 from collections import namedtuple, defaultdict
-from statistics import mean
+from statistics import mean, median, quantiles
 
 KeyStat = namedtuple("KeyStat", ["key", "time"])
 
@@ -14,7 +14,7 @@ class TransitionAggregator:
 
     def adjusted_key_stats(self, transitions):
         """
-        Gives the total time it took to write the given character correctly. Accounts for error correction.
+        Gives the total time in seconds it took to write the given character correctly. Accounts for error correction.
         """
         result = defaultdict(list)
         current_time = 0
@@ -22,41 +22,65 @@ class TransitionAggregator:
             if t.start == "START":
                 continue
             if t.state != "CORRECT":
-                current_time += t.time
+                current_time += t.time / 1000
             else:
-                result[t.end].append(current_time + t.time)
+                result[t.end].append(current_time + t.time / 1000)
                 current_time = 0
 
         return result
 
-    def total_time_for_keys(self, transitions):
+    def calculate_for_adjusted_keys(self, transitions, function):
         return {
-            k: sum(v) / 1000
+            k: function(v)
             for k, v in sorted(
                 self.adjusted_key_stats(transitions).items(),
-                key=lambda x: sum(x[1]),
+                key=lambda x: function(x[1]),
                 reverse=True,
             )
         }
 
-    def total_error_time_for_keys(self, transitions):
-        total_correct_time = self.key_stats(transitions, lambda x: x.state == "CORRECT")
-        total_time = {
-            k: v
-            for k, v in self.total_time_for_keys(transitions).items()
-            if len(total_correct_time[k]) >= 5
+    def total_time_for_keys(self, transitions):
+        return self.calculate_for_adjusted_keys(transitions, sum)
+
+    def count_for_keys(self, transitions):
+        return self.calculate_for_adjusted_keys(transitions, len)
+
+    def mean_for_keys(self, transitions):
+        return self.calculate_for_adjusted_keys(
+            transitions, function=lambda x: mean(x) * 1000
+        )
+
+    def median_for_keys(self, transitions):
+        return self.calculate_for_adjusted_keys(
+            transitions, function=lambda x: median(x) * 1000
+        )
+
+    def p95_for_keys(self, transitions):
+        stats = {
+            k: v for k, v in self.adjusted_key_stats(transitions).items() if len(v) > 9
+        }
+        result = {}
+        for k, v in stats.items():
+            result[k] = round(quantiles(v, n=20, method="inclusive")[-1] * 1000)
+
+        return {
+            k: v for k, v in sorted(result.items(), key=lambda x: x[1], reverse=True)
         }
 
-        total_error_time = {
-            k: v / (sum(total_correct_time[k]) / 1000)
-            for k, v in total_time.items()
-            if v > 0
-        }
+    def total_error_time_for_keys(self, transitions):
+        result = defaultdict(int)
+        current_time = 0
+        for t in transitions:
+            if t.start == "START":
+                continue
+            if t.state != "CORRECT":
+                current_time += t.time / 1000
+            else:
+                result[t.end] += current_time
+                current_time = 0
+
         return {
-            k: v
-            for k, v in sorted(
-                total_error_time.items(), key=lambda x: x[1], reverse=True
-            )
+            k: v for k, v in sorted(result.items(), key=lambda x: x[1], reverse=True)
         }
 
     def last_errors(self, transitions, max_errors=None):
@@ -128,6 +152,16 @@ class TransitionAggregator:
     def wpm(self, transitions):
         return self.correct(transitions) / self.total_time(transitions) * 60 / 5
 
+    def format_dict(self, dictonary, max_entries, format_string="'{}' {:.1f}s "):
+        result = ""
+        entries = 0
+        for k, v in dictonary.items():
+            result += format_string.format(k, v)
+            entries += 1
+            if entries == max_entries:
+                return result
+        return result
+
     def summary(self, transitions):
         def round_dict(d):
             result = {}
@@ -156,7 +190,14 @@ class TransitionAggregator:
             Time Accuracy:      {:.1f}%  (% time spent on correct chars)
 
             Last Errors:        {}
-            Longest Errors:     {}
+
+            Keys:
+            Counts:             {}
+            Total Times:        {}
+            Mean:               {}
+            Median:             {}
+            P95:                {}
+            Errors:             {}
            """.format(
             self.stages(transitions),
             self.key_presses(transitions),
@@ -185,5 +226,10 @@ class TransitionAggregator:
                     reverse=True,
                 )
             ),
-            self.total_error_time_for_keys(transitions),
+            self.format_dict(self.count_for_keys(transitions), 15, "'{}' {} "),
+            self.format_dict(self.total_time_for_keys(transitions), 15),
+            self.format_dict(self.mean_for_keys(transitions), 15, "'{}' {:.0f}ms "),
+            self.format_dict(self.median_for_keys(transitions), 15, "'{}' {:.0f}ms "),
+            self.format_dict(self.p95_for_keys(transitions), 15, "'{}' {:.0f}ms "),
+            self.format_dict(self.total_error_time_for_keys(transitions), 15),
         )
