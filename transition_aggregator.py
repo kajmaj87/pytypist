@@ -73,6 +73,13 @@ class TransitionAggregator:
             if v > 0
         }
 
+    def time_accuracy_for_keys(self, transitions):
+        total = self.total_time_for_keys(transitions)
+        error = self.total_error_time_for_keys(transitions)
+        return {
+            k: (v - error[k]) / v if k in error else 1 / v for k, v in total.items()
+        }
+
     def total_error_time_for_keys(self, transitions):
         result = defaultdict(int)
         current_time = 0

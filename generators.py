@@ -1,10 +1,12 @@
 import random
+import log
 
 
 def sanitize(
     dictonary,
     allowed_chars="qwertyuiop[]asdfghjkl;'\\zxcvbnm,./QWERTYUIOP{}ASDFGHJKL:\"|ZXCVBNM<>?`1234567890-=~!@#$%^&*()_+",
 ):
+    log.debug("Sanitazing dictionary for: {}".format(allowed_chars))
     all_letters_allowed = lambda word: all([letter in allowed_chars for letter in word])
 
     return {k: v for k, v in dictonary.items() if all_letters_allowed(k)}

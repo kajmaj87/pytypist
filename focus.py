@@ -36,9 +36,14 @@ def focus(dictonary, main="", secondary=""):
         has_main_letter = lambda t: any([l in t for l in main]) or len(main) == 0
         return {k: v for k, v in dictonary.items() if has_main_letter(k)}
 
-    log.debug("Calculating focus for [{}] and [{}]".format(main, secondary))
+    log.info("Calculating focus for [{}] and [{}]".format(main, secondary))
     main_dictionary = apply_main_letter(dictonary, main)
     if len(main_dictionary) == 0:
+        log.warn(
+            "Dictonary is empty after applying main focus [{}]. Returning full dictionary.".format(
+                main
+            )
+        )
         return dictonary
     letter_weights = weights(main_dictionary)
     log.debug(
@@ -47,7 +52,7 @@ def focus(dictonary, main="", secondary=""):
         )
     )
     max_weight = max(letter_weights.items(), key=lambda x: x[1])[1]
-    log.debug("{} letters: {}".format(len(letter_weights), letter_weights))
+    log.debug("Total {} letters: {}".format(len(letter_weights), letter_weights))
     secondary_gain = {
         k: max_weight / letter_weights[k]
         for k in letter_weights.keys()
@@ -61,13 +66,6 @@ def focus(dictonary, main="", secondary=""):
         for k, v in main_dictionary.items()
     }
 
-    if len(result) == 0:
-        log.debug(
-            "Dictonary is empty after applying main focus [{}]. Returning full dictionary.".format(
-                main
-            )
-        )
-        return dictonary
     log.debug(
         "Weights: {}".format(
             {k: v for k, v in weights(result).items() if k in secondary}

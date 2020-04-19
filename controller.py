@@ -42,10 +42,10 @@ class Controller:
         log.debug("Stage lenght will be: {}".format(stage_lenght))
         self.current_text = ""
         self.n = 1
-        main_focus = calculate_main_focus_transitions(transitions)
         self.level_controller.advance_to_next_level_if_possible(
-            self.aggregator.key_stats(transitions)
+            self.aggregator.adjusted_key_stats(transitions)
         )
+        main_focus = self.level_controller.main_focus_for_level(transitions)
         secondary_focus = calculate_secondary_focus(
             self.aggregator.key_stats(transitions, lambda x: x.state == "CORRECT"), 10
         )
