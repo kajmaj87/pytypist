@@ -1,7 +1,8 @@
 import log
+from level_controller import LevelController
 from key_logger import KeyLogger
 from transition_aggregator import TransitionAggregator
-from generators import FrequencyBasedGenerator, sanitize
+from generators import FrequencyBasedGenerator
 from files import create_dict, save_transitions, load_transitions
 from focus import (
     focus,
@@ -17,11 +18,12 @@ class Controller:
     def __init__(self, output):
         self.output = output
         self.aggregator = TransitionAggregator()
-        self.dictonary = sanitize(
-            create_dict("data/dictionaries", lambda x: x.lower()),
-            allowed_chars="asdfjkl;",
+        self.level_controller = LevelController(
+            create_dict("data/dictionaries", lambda x: x.lower())
         )
-        self.generator = FrequencyBasedGenerator(self.dictonary)
+        self.generator = FrequencyBasedGenerator(
+            self.level_controller.dictionary_for_current_level()
+        )
         self.start_next_stage()
 
     def start_next_stage(self, transitions=[]):
@@ -41,11 +43,18 @@ class Controller:
         self.current_text = ""
         self.n = 1
         main_focus = calculate_main_focus_transitions(transitions)
+        self.level_controller.advance_to_next_level_if_possible(
+            self.aggregator.key_stats(transitions)
+        )
         secondary_focus = calculate_secondary_focus(
             self.aggregator.key_stats(transitions, lambda x: x.state == "CORRECT"), 10
         )
         self.generator = FrequencyBasedGenerator(
-            focus(self.dictonary, main_focus, secondary_focus)
+            focus(
+                self.level_controller.dictionary_for_current_level(),
+                main_focus,
+                secondary_focus,
+            )
         )
         self.text = self.generator.generateText(stage_lenght)
         self.logger = KeyLogger()

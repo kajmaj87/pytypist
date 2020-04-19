@@ -36,20 +36,20 @@ def focus(dictonary, main="", secondary=""):
         has_main_letter = lambda t: any([l in t for l in main]) or len(main) == 0
         return {k: v for k, v in dictonary.items() if has_main_letter(k)}
 
-    log.warn("Calculating focus for [{}] and [{}]".format(main, secondary))
+    log.debug("Calculating focus for [{}] and [{}]".format(main, secondary))
     main_dictionary = apply_main_letter(dictonary, main)
     if len(main_dictionary) == 0:
         return dictonary
     letter_weights = probabilities(main_dictionary)
     max_weight = max(letter_weights.items(), key=lambda x: x[1])[1]
-    log.warn("{} letters: {}".format(len(letter_weights), letter_weights))
+    log.debug("{} letters: {}".format(len(letter_weights), letter_weights))
     secondary_gain = {
         k: max_weight / letter_weights[k]
         for k in letter_weights.keys()
         if k in secondary
     }
 
-    log.warn("Secondary gain: {}".format(secondary_gain))
+    log.debug("Secondary gain: {}".format(secondary_gain))
 
     result = {
         k: v * max(1, sum([secondary_gain[l] for l in k if l in secondary]))
@@ -57,18 +57,18 @@ def focus(dictonary, main="", secondary=""):
     }
 
     if len(result) == 0:
-        log.warn(
+        log.debug(
             "Dictonary is empty after applying main focus [{}]. Returning full dictionary.".format(
                 main
             )
         )
         return dictonary
-    log.warn(
+    log.debug(
         "Probabilities: {}".format(
             {k: v for k, v in probabilities(result).items() if k in secondary}
         )
     )
-    log.warn(
+    log.debug(
         "Most probable words: {}".format(
             {k: v for k, v in sorted(result.items(), key=lambda x: x[1], reverse=True)}
         )
