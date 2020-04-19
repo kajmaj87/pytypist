@@ -1,7 +1,10 @@
 import random
 
 
-def sanitize(dictonary, allowed_chars):
+def sanitize(
+    dictonary,
+    allowed_chars="qwertyuiop[]asdfghjkl;'\zxcvbnm,./QWERTYUIOP{}ASDFGHJKL:\"|ZXCVBNM<>?`1234567890-=~!@#$%^&*()_+",
+):
     all_letters_allowed = lambda word: all([letter in allowed_chars for letter in word])
 
     return {k: v for k, v in dictonary.items() if all_letters_allowed(k)}
@@ -21,10 +24,7 @@ class FrequencyBasedGenerator:
             i > 0 for i in dictonary.values()
         ), "Dictionary needs at least one positive weight to work"
 
-        self.dictonary = sanitize(
-            dictonary,
-            "qwertyuiop[]asdfghjkl;'\zxcvbnm,./QWERTYUIOP{}ASDFGHJKL:\"|ZXCVBNM<>?`1234567890-=~!@#$%^&*()_+",
-        )
+        self.dictonary = dictonary
 
     def generateText(self, minLength):
         d = self.dictonary

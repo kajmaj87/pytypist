@@ -31,15 +31,31 @@ def calculate_secondary_focus(keys, limit=5):
     return "".join(candidates[:limit])
 
 
-def focus(dictonary, main="", secondary="", gain=10):
-    has_main_letter = lambda t: any([l in t for l in main]) or len(main) == 0
-    has_secondary_letter = lambda t: any([l in t for l in secondary])
-    amount_of_secondary_letters = lambda word: sum([l in word for l in secondary])
-    result = {
-        k: max(1, amount_of_secondary_letters(k) * gain) * v
-        for k, v in dictonary.items()
-        if has_main_letter(k)
+def focus(dictonary, main="", secondary=""):
+    def apply_main_letter(dictonary, main):
+        has_main_letter = lambda t: any([l in t for l in main]) or len(main) == 0
+        return {k: v for k, v in dictonary.items() if has_main_letter(k)}
+
+    log.warn("Calculating focus for [{}] and [{}]".format(main, secondary))
+    main_dictionary = apply_main_letter(dictonary, main)
+    if len(main_dictionary) == 0:
+        return dictonary
+    letter_weights = probabilities(main_dictionary)
+    max_weight = max(letter_weights.items(), key=lambda x: x[1])[1]
+    log.warn("{} letters: {}".format(len(letter_weights), letter_weights))
+    secondary_gain = {
+        k: max_weight / letter_weights[k]
+        for k in letter_weights.keys()
+        if k in secondary
     }
+
+    log.warn("Secondary gain: {}".format(secondary_gain))
+
+    result = {
+        k: v * max(1, sum([secondary_gain[l] for l in k if l in secondary]))
+        for k, v in main_dictionary.items()
+    }
+
     if len(result) == 0:
         log.warn(
             "Dictonary is empty after applying main focus [{}]. Returning full dictionary.".format(
@@ -47,7 +63,17 @@ def focus(dictonary, main="", secondary="", gain=10):
             )
         )
         return dictonary
-    log.debug("Probabilities: {}".format(probabilities(result)))
+    log.warn(
+        "Probabilities: {}".format(
+            {k: v for k, v in probabilities(result).items() if k in secondary}
+        )
+    )
+    log.warn(
+        "Most probable words: {}".format(
+            {k: v for k, v in sorted(result.items(), key=lambda x: x[1], reverse=True)}
+        )
+    )
+
     return result
 
 
