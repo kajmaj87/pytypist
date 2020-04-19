@@ -6,6 +6,9 @@ KeyStat = namedtuple("KeyStat", ["key", "time"])
 
 
 class TransitionAggregator:
+    def wpm(self, key_time_in_seconds):
+        return 60 / key_time_in_seconds / 5
+
     def stages(self, transitions):
         return sum([1 for t in transitions if t.start == "START"])
 
@@ -35,7 +38,6 @@ class TransitionAggregator:
             for k, v in sorted(
                 self.adjusted_key_stats(transitions).items(),
                 key=lambda x: function(x[1]),
-                reverse=True,
             )
         }
 
@@ -47,12 +49,12 @@ class TransitionAggregator:
 
     def mean_for_keys(self, transitions):
         return self.calculate_for_adjusted_keys(
-            transitions, function=lambda x: mean(x) * 1000
+            transitions, function=lambda x: self.wpm(mean(x))
         )
 
     def median_for_keys(self, transitions):
         return self.calculate_for_adjusted_keys(
-            transitions, function=lambda x: median(x) * 1000
+            transitions, function=lambda x: self.wpm(median(x))
         )
 
     def p95_for_keys(self, transitions):
@@ -61,10 +63,14 @@ class TransitionAggregator:
         }
         result = {}
         for k, v in stats.items():
-            result[k] = round(quantiles(v, n=20, method="inclusive")[-1] * 1000)
+            result[k] = quantiles(v, n=20, method="inclusive")[-1]
+
+        log.debug("P95: {}".format(result))
 
         return {
-            k: v for k, v in sorted(result.items(), key=lambda x: x[1], reverse=True)
+            k: self.wpm(v)
+            for k, v in sorted(result.items(), key=lambda x: x[1], reverse=True)
+            if v > 0
         }
 
     def total_error_time_for_keys(self, transitions):
@@ -149,7 +155,7 @@ class TransitionAggregator:
             result[k] = aggregate(v)
         return result
 
-    def wpm(self, transitions):
+    def total_wpm(self, transitions):
         return self.correct(transitions) / self.total_time(transitions) * 60 / 5
 
     def format_dict(self, dictonary, max_entries, format_string="'{}' {:.1f}s "):
@@ -194,9 +200,9 @@ class TransitionAggregator:
             Keys:
             Counts:             {}
             Total Times:        {}
-            Mean:               {}
-            Median:             {}
-            P95:                {}
+            Mean   [WPM]:       {}
+            Median [WPM]:       {}
+            P95    [WPM]:       {}
             Errors:             {}
            """.format(
             self.stages(transitions),
@@ -204,7 +210,7 @@ class TransitionAggregator:
             self.correct(transitions),
             len(self.last_errors(transitions)),
             self.erases(transitions),
-            self.wpm(transitions),
+            self.total_wpm(transitions),
             self.correct(transitions)
             / self.time_if_without_errors(transitions)
             * 60
@@ -228,8 +234,8 @@ class TransitionAggregator:
             ),
             self.format_dict(self.count_for_keys(transitions), 15, "'{}' {} "),
             self.format_dict(self.total_time_for_keys(transitions), 15),
-            self.format_dict(self.mean_for_keys(transitions), 15, "'{}' {:.0f}ms "),
-            self.format_dict(self.median_for_keys(transitions), 15, "'{}' {:.0f}ms "),
-            self.format_dict(self.p95_for_keys(transitions), 15, "'{}' {:.0f}ms "),
+            self.format_dict(self.mean_for_keys(transitions), 15, "'{}' {:.1f} "),
+            self.format_dict(self.median_for_keys(transitions), 15, "'{}' {:.1f} "),
+            self.format_dict(self.p95_for_keys(transitions), 15, "'{}' {:.1f} "),
             self.format_dict(self.total_error_time_for_keys(transitions), 15),
         )

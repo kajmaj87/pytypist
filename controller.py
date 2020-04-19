@@ -33,7 +33,7 @@ class Controller:
             if len(transitions) > 0:
                 return max(
                     min_lenght,
-                    round(self.aggregator.wpm(transitions) * 5 * seconds / 60),
+                    round(self.aggregator.total_wpm(transitions) * 5 * seconds / 60),
                 )
             else:
                 return min_lenght
