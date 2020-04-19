@@ -28,6 +28,14 @@ class Controller:
         )
         self.start_next_stage()
 
+    def format_main_focus(self, main_focus, worst_value, focus_type):
+        if focus_type == "COUNT":
+            return "Count:    {} - {:2d}".format(main_focus, worst_value)
+        if focus_type == "ACCURACY":
+            return "Accuracy: {} - {:.1f}%".format(main_focus, worst_value * 100)
+        if focus_type == "SPEED":
+            return "Speed:    {} - {:.1f} WPM".format(main_focus, worst_value)
+
     def start_next_stage(self, transitions=[]):
         def calculate_stage_lenght(seconds, transitions):
             lenght = 0
@@ -45,7 +53,11 @@ class Controller:
         self.current_text = ""
         self.n = 1
         self.level_controller.advance_to_next_level_if_possible(transitions)
-        main_focus = self.level_controller.main_focus_for_level(transitions)
+        (
+            main_focus,
+            worst_value,
+            focus_type,
+        ) = self.level_controller.main_focus_for_level(transitions)
         secondary_focus = calculate_secondary_focus(
             self.aggregator.key_stats(transitions, lambda x: x.state == "CORRECT"), 10
         )
@@ -61,8 +73,9 @@ class Controller:
         self.output.write(self.get_stage_text())
         if len(transitions) > 0:
             self.output.write(
-                "\n\nFocus for stage:\nMain: [{}]\tSecondary: [{}]".format(
-                    main_focus, secondary_focus
+                "\n\nFocus for stage:\n{}\tSecondary: [{}]".format(
+                    self.format_main_focus(main_focus, worst_value, focus_type),
+                    secondary_focus,
                 )
             )
             self.output.write("\n\nKey stats:\n")

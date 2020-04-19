@@ -21,7 +21,7 @@ chars_allowed = [
 
 min_occurences = 20
 min_wpm = 30
-min_accuracy = 0.95
+min_accuracy = 0.9
 
 
 def wpm(key_time_in_seconds):
@@ -98,7 +98,7 @@ class LevelController:
 
         key_stats = self.aggregator.adjusted_key_stats(transitions)
         if len(key_stats) == 0:
-            return ""
+            return "", "", ""
 
         min_occurence = min(self.occurences(key_stats).items(), key=lambda x: x[1],)
         worst_accuracy = min(
@@ -112,19 +112,19 @@ class LevelController:
                     min_occurence[0], min_occurence[1]
                 )
             )
-            return min_occurence[0]
+            return (min_occurence[0], min_occurence[1], "COUNT")
         if worst_accuracy[1] < min_accuracy:
             log.info(
                 "Focus on accuracy: [{}]: {:0.1f}%".format(
                     worst_accuracy[0], worst_accuracy[1] * 100
                 )
             )
-            return worst_accuracy[0]
+            return (worst_accuracy[0], worst_accuracy[1], "ACCURACY")
         if slowest[1] < min_wpm:
             log.info("Focus on speed: [{}]: {:0.1f} WPM".format(slowest[0], slowest[1]))
-            return slowest[0]
+            return (slowest[0], slowest[1], "SPEED")
         # no focus needed
-        return ""
+        return "", "", ""
 
     def current_chars(self):
         return "".join(chars_allowed[: self.current_level])
