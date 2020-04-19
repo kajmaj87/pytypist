@@ -3,7 +3,7 @@ import random
 
 def sanitize(
     dictonary,
-    allowed_chars="qwertyuiop[]asdfghjkl;'\zxcvbnm,./QWERTYUIOP{}ASDFGHJKL:\"|ZXCVBNM<>?`1234567890-=~!@#$%^&*()_+",
+    allowed_chars="qwertyuiop[]asdfghjkl;'\\zxcvbnm,./QWERTYUIOP{}ASDFGHJKL:\"|ZXCVBNM<>?`1234567890-=~!@#$%^&*()_+",
 ):
     all_letters_allowed = lambda word: all([letter in allowed_chars for letter in word])
 

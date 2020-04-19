@@ -51,7 +51,9 @@ def test_adjusted_keys_should_not_count_first_error(ta):
         t(e="a", st="CORRECT", t=50),
         t(e="x", st="CORRECT", t=50),
     ]
-    assert {"a": [180, 50], "x": [50]}.items() == ta.adjusted_key_stats(stage).items()
+    assert {"a": [0.18, 0.05], "x": [0.05]}.items() == ta.adjusted_key_stats(
+        stage
+    ).items()
 
 
 def test_last_real_errors(ta):
