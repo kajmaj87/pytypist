@@ -48,14 +48,24 @@ class LevelController:
             k: wpm(mean(v)) for k, v in key_stats.items() if k in self.current_chars()
         }
 
-    def advance_to_next_level_if_possible(self, key_stats):
+    def time_accuracy(self, transitions):
+        return {
+            k: v
+            for k, v in self.aggregator.time_accuracy_for_keys(transitions).items()
+            if k in self.current_chars()
+        }
+
+    def advance_to_next_level_if_possible(self, transitions):
+        key_stats = self.aggregator.adjusted_key_stats(transitions)
         all_occured = all(
             [v > min_occurences for v in self.occurences(key_stats).values()]
         )
         all_fast = all(
             [v > min_wpm for v in self.mean_wpm_for_keys(key_stats).values()]
         )
-        all_accurate = True
+        all_accurate = all(
+            [v > min_accuracy for v in self.time_accuracy(transitions).values()]
+        )
         if not all_occured:
             log.debug(
                 "Won't advance as not all yet occured {} times: {}".format(
@@ -66,6 +76,12 @@ class LevelController:
             log.debug(
                 "Won't advance as not yet fast enough (>{}WPM): {}".format(
                     min_wpm, self.mean_wpm_for_keys(key_stats)
+                )
+            )
+        if not all_accurate:
+            log.debug(
+                "Won't advance as not yet accurate enough (>{:0.1f}%): {}".format(
+                    min_accuracy * 100, self.time_accuracy(transitions)
                 )
             )
 
@@ -79,22 +95,17 @@ class LevelController:
                 self.current_level, self.current_chars()
             )
         )
-        key_stats = self.aggregator.key_stats(transitions)
+
+        key_stats = self.aggregator.adjusted_key_stats(transitions)
         if len(key_stats) == 0:
             return ""
+
         min_occurence = min(self.occurences(key_stats).items(), key=lambda x: x[1],)
-        accuracies = {
-            k: v
-            for k, v in self.aggregator.time_accuracy_for_keys(transitions).items()
-            if k in self.current_chars()
-            if k != " "
-        }.items()
-
-        worst_accuracy = min(accuracies, key=lambda x: x[1])
-
-        log.info("Worst: {} all accuracies: {}".format(worst_accuracy, accuracies))
-
+        worst_accuracy = min(
+            self.time_accuracy(transitions).items(), key=lambda x: x[1]
+        )
         slowest = min(self.mean_wpm_for_keys(key_stats).items(), key=lambda x: x[1],)
+
         if min_occurence[1] < min_occurences:
             log.info(
                 "Focus on occurences: [{}]: {}".format(
@@ -102,9 +113,6 @@ class LevelController:
                 )
             )
             return min_occurence[0]
-        if slowest[1] < min_wpm:
-            log.info("Focus on speed: [{}]: {:0.1f} WPM".format(slowest[0], slowest[1]))
-            return slowest[0]
         if worst_accuracy[1] < min_accuracy:
             log.info(
                 "Focus on accuracy: [{}]: {:0.1f}%".format(
@@ -112,6 +120,9 @@ class LevelController:
                 )
             )
             return worst_accuracy[0]
+        if slowest[1] < min_wpm:
+            log.info("Focus on speed: [{}]: {:0.1f} WPM".format(slowest[0], slowest[1]))
+            return slowest[0]
         # no focus needed
         return ""
 
