@@ -102,6 +102,9 @@ class LevelController:
                 )
             )
             return min_occurence[0]
+        if slowest[1] < min_wpm:
+            log.info("Focus on speed: [{}]: {:0.1f} WPM".format(slowest[0], slowest[1]))
+            return slowest[0]
         if worst_accuracy[1] < min_accuracy:
             log.info(
                 "Focus on accuracy: [{}]: {:0.1f}%".format(
@@ -109,9 +112,6 @@ class LevelController:
                 )
             )
             return worst_accuracy[0]
-        if slowest[1] < min_wpm:
-            log.info("Focus on speed: [{}]: {:0.1f} WPM".format(slowest[0], slowest[1]))
-            return slowest[0]
         # no focus needed
         return ""
 
