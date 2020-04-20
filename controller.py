@@ -37,7 +37,7 @@ class Controller:
         if focus_type == "SPEED":
             return "Speed:    {} - {:.1f} WPM".format(main_focus, worst_value)
 
-    def update_stage(self, transitions, focus_string):
+    def update_stage(self, transitions, main_focus, focus_string):
         if zen_mode:
             self.output.goto_writing_position(0.1)
             self.output.write(
@@ -47,7 +47,11 @@ class Controller:
                 ),
                 justify="MIDDLE",
             )
-            self.output.write("\n\n")
+            self.output.write("\n")
+            self.output.write(
+                main_focus if main_focus is not None else "", justify="MIDDLE"
+            )
+            self.output.write("\n")
             self.output.write_stage(self.get_stage_text(), justify="MIDDLE")
         else:
             self.output.write(self.get_stage_text())
@@ -95,11 +99,11 @@ class Controller:
         )
         self.text = self.generator.generateText(stage_lenght)
         self.logger = KeyLogger()
+        short_focus = self.format_main_focus(main_focus, worst_value, focus_type)
         focus_string = "\n\nFocus for stage:\n{}\tSecondary: [{}]".format(
-            self.format_main_focus(main_focus, worst_value, focus_type),
-            secondary_focus,
+            short_focus, secondary_focus,
         )
-        self.update_stage(transitions, focus_string)
+        self.update_stage(transitions, short_focus, focus_string)
 
     def get_stage_text(self):
         return self.text
