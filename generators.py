@@ -31,12 +31,15 @@ class FrequencyBasedGenerator:
     def generateText(self, minLength):
         d = self.dictonary
         text = ""
-        while len(text) < minLength + 1:
-            text += (
+        unique_words_sample = list(
+            set(
                 random.choices(
-                    population=list(d.keys()), weights=list(d.values()), k=1
-                )[0]
-                + " "
+                    population=list(d.keys()), weights=list(d.values()), k=1000
+                )
             )
+        )
+        random.shuffle(unique_words_sample)
+        while len(text) < minLength + 1 and len(unique_words_sample) > 0:
+            text += unique_words_sample.pop() + " "
         text = text[:-1]  # cut last space
         return text

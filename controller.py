@@ -11,7 +11,7 @@ from focus import (
     calculate_secondary_focus,
 )
 
-MAX_TRANSITIONS = 5000
+MAX_TRANSITIONS = 1000
 
 
 class Controller:
