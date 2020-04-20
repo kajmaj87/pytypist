@@ -17,14 +17,33 @@ class Console_ui:
     def redraw(self):
         self.stdscr.clear()
 
-    def goto_writing_position(self):
-        self.stdscr.move(1, 0)
+    def goto_writing_position(self, position=0):
+        y, x = self.stdscr.getmaxyx()
+        self.stdscr.move(max(1, round(y * position)), 0)
 
     def get_next_key(self):
         return self.stdscr.getkey()
 
-    def write(self, text):
-        self.stdscr.addstr(text + "\n")
+    def calculate_x_position(self, justify, text):
+        maxy, maxx = self.stdscr.getmaxyx()
+        if justify == "LEFT":
+            return 0
+        if justify == "MIDDLE":
+            return round(maxx / 2 - len(text) / 2)
+
+    def write(self, text, justify="LEFT"):
+        if justify == "LEFT":
+            self.stdscr.addstr(text + "\n")
+        if justify == "MIDDLE":
+            y, x = self.stdscr.getyx()
+            newx = self.calculate_x_position(justify, text)
+            self.stdscr.addstr(y, newx, text)
+
+    def write_stage(self, text, justify="LEFT"):
+        y, x = self.stdscr.getyx()
+        self.write(text, justify)
+        newx = self.calculate_x_position(justify, text)
+        self.stdscr.move(y + 1, newx)
 
     def inner_loop(self, stdscr):
         self.stdscr = stdscr

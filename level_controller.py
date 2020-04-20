@@ -3,29 +3,6 @@ from transition_aggregator import TransitionAggregator
 from statistics import mean
 from generators import sanitize  # TODO move to this class
 
-chars_allowed = [
-    "asdflkjh",
-    "ru",
-    "ei",
-    "wo",
-    "qp",
-    "ty",
-    "gh",
-    "vm",
-    "c,",
-    "x.",
-    "z/",
-    "bn",
-    "[]",
-    "'\\",
-    "-=",
-    "10",
-    "29",
-    "38",
-    "47",
-    "56",
-]
-
 
 min_occurences = 20
 min_wpm = 30
@@ -38,6 +15,28 @@ def wpm(key_time_in_seconds):
 
 
 class LevelController:
+    chars_allowed = [
+        "asdflkjh",
+        "ru",
+        "ei",
+        "wo",
+        "qp",
+        "ty",
+        "gh",
+        "vm",
+        "c,",
+        "x.",
+        "z/",
+        "bn",
+        "[]",
+        "'\\",
+        "-=",
+        "10",
+        "29",
+        "38",
+        "47",
+        "56",
+    ]
 
     from level_controller import wpm
 
@@ -138,7 +137,10 @@ class LevelController:
         return "", "", ""
 
     def current_chars(self):
-        return "".join(chars_allowed[: self.current_level])
+        return "".join(self.chars_allowed[: self.current_level])
+
+    def new_chars(self):
+        return self.chars_allowed[self.current_level - 1]
 
     def dictionary_for_current_level(self):
         return sanitize(self.dictionary, self.current_chars())

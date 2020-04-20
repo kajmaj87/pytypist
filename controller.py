@@ -12,6 +12,7 @@ from focus import (
 )
 
 MAX_TRANSITIONS = 1000
+zen_mode = True
 
 
 class Controller:
@@ -35,6 +36,30 @@ class Controller:
             return "Accuracy: {} - {:.1f}%".format(main_focus, worst_value * 100)
         if focus_type == "SPEED":
             return "Speed:    {} - {:.1f} WPM".format(main_focus, worst_value)
+
+    def update_stage(self, transitions, focus_string):
+        if zen_mode:
+            self.output.goto_writing_position(0.1)
+            self.output.write(
+                "Level {}: {}".format(
+                    self.level_controller.current_level,
+                    self.level_controller.new_chars(),
+                ),
+                justify="MIDDLE",
+            )
+            self.output.write("\n\n")
+            self.output.write_stage(self.get_stage_text(), justify="MIDDLE")
+        else:
+            self.output.write(self.get_stage_text())
+            if len(transitions) > 0:
+                self.output.write(focus_string)
+                self.output.write("\n\nKey stats:\n")
+                self.output.write(
+                    self.aggregator.summary(load_transitions()[-MAX_TRANSITIONS:])
+                )
+
+            # TODO this call is now redunant with write_stage method
+            self.output.goto_writing_position()
 
     def start_next_stage(self, transitions=[]):
         def calculate_stage_lenght(seconds, transitions):
@@ -70,19 +95,11 @@ class Controller:
         )
         self.text = self.generator.generateText(stage_lenght)
         self.logger = KeyLogger()
-        self.output.write(self.get_stage_text())
-        if len(transitions) > 0:
-            self.output.write(
-                "\n\nFocus for stage:\n{}\tSecondary: [{}]".format(
-                    self.format_main_focus(main_focus, worst_value, focus_type),
-                    secondary_focus,
-                )
-            )
-            self.output.write("\n\nKey stats:\n")
-            self.output.write(
-                self.aggregator.summary(load_transitions()[-MAX_TRANSITIONS:])
-            )
-        self.output.goto_writing_position()
+        focus_string = "\n\nFocus for stage:\n{}\tSecondary: [{}]".format(
+            self.format_main_focus(main_focus, worst_value, focus_type),
+            secondary_focus,
+        )
+        self.update_stage(transitions, focus_string)
 
     def get_stage_text(self):
         return self.text
