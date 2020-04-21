@@ -4,7 +4,7 @@ logging.basicConfig(
     filename="debug.log",
     filemode="w",
     level=logging.DEBUG,
-    format="%(asctime)s %(levelname)s:%(message)s",
+    format="%(asctime)s %(levelname)s %(module)s.%(funcName)s:%(lineno)d: %(message)s",
     datefmt="%H:%M:%S",
 )
 

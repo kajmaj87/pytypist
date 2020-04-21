@@ -108,6 +108,7 @@ class LevelController:
 
         key_stats = self.aggregator.adjusted_key_stats(transitions)
         if len(key_stats) == 0:
+            log.warn("No key stats in given transitions, won't calclulate focus")
             return "", "", ""
 
         min_occurence = min(self.occurences(key_stats).items(), key=lambda x: x[1],)
@@ -134,6 +135,7 @@ class LevelController:
             log.info("Focus on speed: [{}]: {:0.1f} WPM".format(slowest[0], slowest[1]))
             return (slowest[0], slowest[1], "SPEED")
         # no focus needed
+        log.info("No focus needed as all stats are fine.")
         return "", "", ""
 
     def current_chars(self):
