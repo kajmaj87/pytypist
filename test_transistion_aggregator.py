@@ -132,6 +132,33 @@ def test_time_if_without_errors(ta):
     assert 0.3 == round(ta.time_if_without_errors(stages), 1)
 
 
+def test_time_accuracy_for_keys_no_limit(ta):
+    stages = prepare_stage("abc", "x<abxy<<c")
+    # first keypress is never taken into account as it always has time == 0
+    assert {"a": 1 / 2, "b": 1, "c": 1 / 5} == {
+        k: round(v, 1) for k, v in ta.time_accuracy_for_keys(stages).items()
+    }
+
+
+def test_time_accuracy_for_keys_with_limit(ta):
+    stages = prepare_stage("abcac", "x<abxy<<cax<c")
+    assert {"a": 0, "b": 1, "c": 1 / 3} == {
+        k: round(v, 1) for k, v in ta.time_accuracy_for_keys(stages, 1).items()
+    }
+
+
+def test_total_error_time_for_keys(ta):
+    stages = prepare_stage("abca", "x<abxy<<ca", key_time=1000)
+    # first keypress not taken into account (has time == 0)
+    assert {"a": 1, "b": 0, "c": 4} == ta.total_error_time_for_keys(stages)
+
+
+def test_total_error_time_for_keys_with_limit(ta):
+    stages = prepare_stage("abcac", "x<abxy<<cax<c", key_time=1000)
+    # first keypress not taken into account (has time == 0)
+    assert {"a": 0, "b": 0, "c": 2} == ta.total_error_time_for_keys(stages, limit=1)
+
+
 def test_prepare_stage_onechar():
     stages = prepare_stage("a", "a")
     assert stages == [t(s="START", e="a", st="CORRECT", t=10)]
@@ -205,13 +232,6 @@ def prepare_stage(stage_text, written_text, delete_char="<", key_time=10):
             t(s=transform_erase(last_key), e=transform_erase(l), st=state, t=key_time)
         )
         last_key = l
-
-    # state = check_chars(l, stage_text[char_in_text])
-    # result.append(
-    #     t(s=transform_erase(last_key), e=transform_erase(l), st=state, t=key_time,)
-    # )
-    # last_key = l
-    # char_in_text += 1 if state == "CORRECT" else 0
 
     return result
 

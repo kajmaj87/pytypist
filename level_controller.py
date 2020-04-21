@@ -61,7 +61,9 @@ class LevelController:
     def time_accuracy(self, transitions):
         return {
             k: v
-            for k, v in self.aggregator.time_accuracy_for_keys(transitions).items()
+            for k, v in self.aggregator.time_accuracy_for_keys(
+                transitions, max_same_letter_count
+            ).items()
             if k in self.current_chars()
         }
 

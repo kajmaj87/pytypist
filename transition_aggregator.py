@@ -32,28 +32,32 @@ class TransitionAggregator:
 
         return result
 
-    def calculate_for_adjusted_keys(self, transitions, function):
+    def calculate_for_adjusted_keys(self, adjusted_key_stats, function, limit=0):
         return {
-            k: function(v)
+            k: function(v[-limit:])
             for k, v in sorted(
-                self.adjusted_key_stats(transitions).items(),
-                key=lambda x: function(x[1]),
+                adjusted_key_stats.items(), key=lambda x: function(x[1]),
             )
         }
 
-    def total_time_for_keys(self, transitions):
-        return self.calculate_for_adjusted_keys(transitions, sum)
+    def calculate_for_transitions(self, transitions, function, limit=9):
+        return self.calculate_for_adjusted_keys(
+            self.adjusted_key_stats(transitions), function, limit
+        )
+
+    def total_time_for_keys(self, transitions, limit=0):
+        return self.calculate_for_transitions(transitions, sum, limit)
 
     def count_for_keys(self, transitions):
-        return self.calculate_for_adjusted_keys(transitions, len)
+        return self.calculate_for_transitions(transitions, len)
 
     def mean_for_keys(self, transitions):
-        return self.calculate_for_adjusted_keys(
+        return self.calculate_for_transitions(
             transitions, function=lambda x: self.wpm(mean(x))
         )
 
     def median_for_keys(self, transitions):
-        return self.calculate_for_adjusted_keys(
+        return self.calculate_for_transitions(
             transitions, function=lambda x: self.wpm(median(x))
         )
 
@@ -73,14 +77,14 @@ class TransitionAggregator:
             if v > 0
         }
 
-    def time_accuracy_for_keys(self, transitions):
-        total = self.total_time_for_keys(transitions)
-        error = self.total_error_time_for_keys(transitions)
+    def time_accuracy_for_keys(self, transitions, limit=0):
+        total = self.total_time_for_keys(transitions, limit)
+        error = self.total_error_time_for_keys(transitions, limit)
         return {
             k: (v - error[k]) / v if k in error else 1 / v for k, v in total.items()
         }
 
-    def total_error_time_for_keys(self, transitions):
+    def total_error_time_for_keys(self, transitions, limit=0):
         result = defaultdict(int)
         current_time = 0
         for t in transitions:
