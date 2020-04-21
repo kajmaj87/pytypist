@@ -80,21 +80,33 @@ class TransitionAggregator:
     def time_accuracy_for_keys(self, transitions, limit=0):
         total = self.total_time_for_keys(transitions, limit)
         error = self.total_error_time_for_keys(transitions, limit)
-        return {
-            k: (v - error[k]) / v if k in error else 1 / v for k, v in total.items()
-        }
+        log.debug(
+            "Counting time accuracy 1 - error/total: 1 - {}/{}".format(error, total)
+        )
+        return {k: (v - error[k]) / v if k in error else 1 for k, v in total.items()}
 
     def total_error_time_for_keys(self, transitions, limit=0):
         result = defaultdict(int)
-        current_time = 0
-        for t in transitions:
-            if t.start == "START":
-                continue
-            if t.state != "CORRECT":
-                current_time += t.time / 1000
-            else:
-                result[t.end] += current_time
-                current_time = 0
+        keypresses = defaultdict(int)
+        last_correct_key = None
+
+        for t in reversed(transitions):
+            log.debug(t)
+            if t.state == "CORRECT" and (keypresses[t.end] <= limit or limit == 0):
+                log.debug("Last correct key is {}".format(t.end))
+                keypresses[t.end] += 1
+            if t.state == "CORRECT":
+                last_correct_key = t.end
+            if (
+                keypresses[last_correct_key] > 0
+                and (keypresses[last_correct_key] <= limit or limit == 0)
+                and t.state != "CORRECT"
+                and len(last_correct_key) == 1
+                and last_correct_key is not None
+            ):
+                log.debug("Adding {} for {}".format(t.time / 1000, last_correct_key))
+                # TODO unify everything to seconds
+                result[last_correct_key] += t.time / 1000
 
         return {
             k: v for k, v in sorted(result.items(), key=lambda x: x[1], reverse=True)

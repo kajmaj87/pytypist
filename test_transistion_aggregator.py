@@ -132,31 +132,35 @@ def test_time_if_without_errors(ta):
     assert 0.3 == round(ta.time_if_without_errors(stages), 1)
 
 
+def round_dict(dictonary, digit):
+    return {k: round(v, digit) for k, v in dictonary.items()}
+
+
 def test_time_accuracy_for_keys_no_limit(ta):
-    stages = prepare_stage("abc", "x<abxy<<c")
+    stages = prepare_stage("0abc", "0x<abxy<<c")
     # first keypress is never taken into account as it always has time == 0
-    assert {"a": 1 / 2, "b": 1, "c": 1 / 5} == {
-        k: round(v, 1) for k, v in ta.time_accuracy_for_keys(stages).items()
-    }
+    assert round_dict({"a": 1 / 3, "b": 1, "c": 1 / 5}, 3) == round_dict(
+        ta.time_accuracy_for_keys(stages), 3
+    )
 
 
 def test_time_accuracy_for_keys_with_limit(ta):
-    stages = prepare_stage("abcac", "x<abxy<<cax<c")
-    assert {"a": 0, "b": 1, "c": 1 / 3} == {
-        k: round(v, 1) for k, v in ta.time_accuracy_for_keys(stages, 1).items()
-    }
+    stages = prepare_stage("0abcac", "0x<abxy<<cax<c")
+    # first keypress is never taken into account as it always has time == 0
+    assert round_dict({"a": 1, "b": 1, "c": 1 / 3}, 3) == round_dict(
+        ta.time_accuracy_for_keys(stages, 1), 3
+    )
 
 
 def test_total_error_time_for_keys(ta):
     stages = prepare_stage("abca", "x<abxy<<ca", key_time=1000)
-    # first keypress not taken into account (has time == 0)
-    assert {"a": 1, "b": 0, "c": 4} == ta.total_error_time_for_keys(stages)
+    assert {"a": 2, "c": 4} == ta.total_error_time_for_keys(stages)
 
 
 def test_total_error_time_for_keys_with_limit(ta):
     stages = prepare_stage("abcac", "x<abxy<<cax<c", key_time=1000)
-    # first keypress not taken into account (has time == 0)
-    assert {"a": 0, "b": 0, "c": 2} == ta.total_error_time_for_keys(stages, limit=1)
+    # only c is returned as last entries for a and b were both correct
+    assert {"c": 2} == ta.total_error_time_for_keys(stages, limit=1)
 
 
 def test_prepare_stage_onechar():
