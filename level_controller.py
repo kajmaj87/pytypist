@@ -2,6 +2,7 @@ import log
 from transition_aggregator import TransitionAggregator
 from statistics import mean
 from generators import sanitize  # TODO move to this class
+from files import load_level_info, save_level_info
 
 
 min_occurences = 20
@@ -40,11 +41,10 @@ class LevelController:
 
     from level_controller import wpm
 
-    current_level = 1
-
     def __init__(self, dictionary):
         self.dictionary = dictionary
         self.aggregator = TransitionAggregator()
+        self.current_level = load_level_info(default=1)["level"]
 
     def occurences(self, key_stats):
         return {
@@ -68,7 +68,7 @@ class LevelController:
     def advance_to_next_level_if_possible(self, transitions):
         key_stats = self.aggregator.adjusted_key_stats(transitions)
         all_occured = all(
-            [v > min_occurences for v in self.occurences(key_stats).values()]
+            [v >= min_occurences for v in self.occurences(key_stats).values()]
         )
         all_fast = all(
             [v > min_wpm for v in self.mean_wpm_for_keys(key_stats).values()]
@@ -79,24 +79,40 @@ class LevelController:
         if not all_occured:
             log.debug(
                 "Won't advance as not all yet occured {} times: {}".format(
-                    min_occurences, self.occurences(key_stats)
+                    min_occurences,
+                    {
+                        k: v
+                        for k, v in self.occurences(key_stats).items()
+                        if v < min_occurences
+                    },
                 )
             )
         if not all_fast:
             log.debug(
                 "Won't advance as not yet fast enough (>{}WPM): {}".format(
-                    min_wpm, self.mean_wpm_for_keys(key_stats)
+                    min_wpm,
+                    {
+                        k: v
+                        for k, v in self.mean_wpm_for_keys(key_stats).items()
+                        if v < min_wpm
+                    },
                 )
             )
         if not all_accurate:
             log.debug(
                 "Won't advance as not yet accurate enough (>{:0.1f}%): {}".format(
-                    min_accuracy * 100, self.time_accuracy(transitions)
+                    min_accuracy * 100,
+                    {
+                        k: v
+                        for k, v in self.time_accuracy(transitions).items()
+                        if v < min_accuracy
+                    },
                 )
             )
 
         if all_occured and all_fast and all_accurate:
             self.current_level += 1
+            save_level_info({"level": self.current_level})
             log.info("Advancing to level {}".format(self.current_level))
 
     def main_focus_for_level(self, transitions):

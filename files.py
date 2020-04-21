@@ -7,6 +7,7 @@ from key_logger import Transition
 from datetime import datetime
 
 transition_path = "stats/transitions"
+level_info_path = "stats"
 
 
 def create_dict(path):
@@ -38,11 +39,12 @@ def lazy_load_dict(dict_path, source_path, mapper=lambda x: x):
     return {mapper(k): v for k, v in dictionary.items()}
 
 
-def save_transitions(transitions):
-    def prepare_directory(path):
-        if not os.path.exists(path):
-            os.makedirs(path)
+def prepare_directory(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
 
+
+def save_transitions(transitions):
     def current_timestamp():
         return str(round(datetime.now().timestamp()))
 
@@ -58,3 +60,18 @@ def load_transitions():
         with open(f) as current:
             transitions.extend(json.load(current))
     return [Transition(t[0], t[1], t[2], t[3]) for t in transitions]
+
+
+def save_level_info(level_info):
+    prepare_directory(level_info_path)
+    with open(os.path.join(level_info_path, "level.info"), "w") as f:
+        json.dump(level_info, f)
+
+
+def load_level_info(default):
+    try:
+        with open(os.path.join(level_info_path, "level.info"), "r") as f:
+            return json.load(f)
+    except:
+        log.warn("Couldn't load level file, returning default level {}".format(default))
+        return default
