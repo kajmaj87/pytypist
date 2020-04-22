@@ -36,11 +36,11 @@ class TransitionAggregator:
         return {
             k: function(v[-limit:])
             for k, v in sorted(
-                adjusted_key_stats.items(), key=lambda x: function(x[1]),
+                adjusted_key_stats.items(), key=lambda x: function(x[1][-limit:]),
             )
         }
 
-    def calculate_for_transitions(self, transitions, function, limit=9):
+    def calculate_for_transitions(self, transitions, function, limit=0):
         return self.calculate_for_adjusted_keys(
             self.adjusted_key_stats(transitions), function, limit
         )
@@ -255,7 +255,7 @@ class TransitionAggregator:
                     reverse=True,
                 )
             ),
-            self.format_dict(self.count_for_keys(transitions), 15, "'{}' {} "),
+            self.format_dict(self.count_for_keys(transitions), 25, "'{}' {} "),
             self.format_dict(self.total_time_for_keys(transitions), 15),
             self.format_dict(self.mean_for_keys(transitions), 15, "'{}' {:.1f} "),
             self.format_dict(self.median_for_keys(transitions), 15, "'{}' {:.1f} "),

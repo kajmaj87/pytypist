@@ -11,8 +11,8 @@ from focus import (
     calculate_secondary_focus,
 )
 
-MAX_TRANSITIONS = 1000
-zen_mode = True
+MAX_TRANSITIONS = 5000
+zen_mode = False
 
 
 class Controller:
