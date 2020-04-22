@@ -1,4 +1,5 @@
 import pytest
+from pytest import approx
 from statistics import mean
 from key_logger import Transition
 from transition_aggregator import KeyStat
@@ -129,27 +130,19 @@ def test_total_time_spent(ta):
 
 def test_time_if_without_errors(ta):
     stages = prepare_stage("abc", "ac<bd<c", key_time=100)
-    assert 0.3 == round(ta.time_if_without_errors(stages), 1)
-
-
-def round_dict(dictonary, digit):
-    return {k: round(v, digit) for k, v in dictonary.items()}
+    assert 0.3 == approx(ta.time_if_without_errors(stages))
 
 
 def test_time_accuracy_for_keys_no_limit(ta):
     stages = prepare_stage("0abc", "0x<abxy<<c")
     # first keypress is never taken into account as it always has time == 0
-    assert round_dict({"a": 1 / 3, "b": 1, "c": 1 / 5}, 3) == round_dict(
-        ta.time_accuracy_for_keys(stages), 3
-    )
+    assert {"a": 1 / 3, "b": 1, "c": 1 / 5} == approx(ta.time_accuracy_for_keys(stages))
 
 
 def test_time_accuracy_for_keys_with_limit(ta):
     stages = prepare_stage("0abcac", "0x<abxy<<cax<c")
     # first keypress is never taken into account as it always has time == 0
-    assert round_dict({"a": 1, "b": 1, "c": 1 / 3}, 3) == round_dict(
-        ta.time_accuracy_for_keys(stages, 1), 3
-    )
+    assert {"a": 1, "b": 1, "c": 1 / 3} == approx(ta.time_accuracy_for_keys(stages, 1))
 
 
 def test_total_error_time_for_keys(ta):
