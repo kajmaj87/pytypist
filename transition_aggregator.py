@@ -91,9 +91,7 @@ class TransitionAggregator:
         last_correct_key = None
 
         for t in reversed(transitions):
-            log.debug(t)
             if t.state == "CORRECT" and (keypresses[t.end] <= limit or limit == 0):
-                log.debug("Last correct key is {}".format(t.end))
                 keypresses[t.end] += 1
             if t.state == "CORRECT":
                 last_correct_key = t.end
@@ -104,7 +102,6 @@ class TransitionAggregator:
                 and len(last_correct_key) == 1
                 and last_correct_key is not None
             ):
-                log.debug("Adding {} for {}".format(t.time / 1000, last_correct_key))
                 # TODO unify everything to seconds
                 result[last_correct_key] += t.time / 1000
 
