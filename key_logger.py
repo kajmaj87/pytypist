@@ -1,8 +1,7 @@
 import time
 import log
 from collections import namedtuple
-
-Transition = namedtuple("Transition", ["start", "end", "state", "time"])
+from entities import Transition
 
 
 class KeyLogger:

@@ -3,7 +3,7 @@ import os
 import log
 from glob import glob
 import json
-from key_logger import Transition
+from entities import Transition
 from datetime import datetime
 
 transition_path = "stats/transitions"

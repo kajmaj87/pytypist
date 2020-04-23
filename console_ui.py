@@ -1,5 +1,5 @@
 from controller import Controller
-from key import Key
+from entities import Key
 import curses
 import log
 

@@ -4,3 +4,4 @@ debug.log
 stats/
 data/dictionaries
 data/archive
+*.svg
