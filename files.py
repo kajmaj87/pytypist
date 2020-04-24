@@ -52,10 +52,10 @@ def save(obj, path, file_name=current_timestamp()):
         json.dump(obj, f, indent=2)
 
 
-def load_array(path, file_name=None, transform=lambda x: x):
+def load_bulk(path, file_name=None, transform=lambda x: x):
     """
     Loads all the the files in given path or just one file if file_name is not ommited and 
-    then packs merges each array found into one array.
+    then packs each object found into one array.
 
     When transform is given it will be applied on each object after finishing
     """
@@ -66,8 +66,15 @@ def load_array(path, file_name=None, transform=lambda x: x):
     result = []
     for f in files:
         with open(f) as current:
-            result.extend(json.load(current))
+            result.append(json.load(current))
     return [transform(t) for t in result]
+
+
+def load_arrays(path, file_name=None, transform=lambda x: x):
+    # just flatten the array of arrays coming from load_bulk and apply transform
+    return [
+        transform(item) for sublist in load_bulk(path, file_name) for item in sublist
+    ]
 
 
 def save_level_info(level_info):

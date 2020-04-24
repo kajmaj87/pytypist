@@ -1,5 +1,5 @@
 from entities import Transition
-from files import save, load_array
+from files import save, load_arrays
 
 transition_path = "stats/transitions"
 
@@ -9,6 +9,6 @@ def save_transitions(transitions):
 
 
 def load_transitions():
-    return load_array(
+    return load_arrays(
         transition_path, transform=lambda t: Transition(t[0], t[1], t[2], t[3])
     )
