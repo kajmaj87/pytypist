@@ -47,17 +47,32 @@ def current_timestamp():
 
 
 def save(obj, path, file_name=current_timestamp()):
+    """
+    Saves the given object under the path + filename location. 
+    If filename is ommited an unique name will be generated.
+    """
     prepare_directory(path)
     with open(os.path.join(path, file_name), "w") as f:
         json.dump(obj, f, indent=2)
 
 
-def load_bulk(path, file_name=None, transform=lambda x: x):
+def load_raw(path, file_name, transform=lambda x: x):
+    """
+    Reads the given file into a list of strings optionally applying transform to each line.
+    Returns an array of strings/or results from transform.
+    """
+    process_file = lambda f: [transform(line) for line in f]
+    return load_bulk(path, file_name, process_file)[0]
+
+
+def load_bulk(path, file_name=None, transform=lambda x: json.load(x)):
     """
     Loads all the the files in given path or just one file if file_name is not ommited and 
     then packs each object found into one array.
 
-    When transform is given it will be applied on each object after finishing
+    Treats all files as json by default, provide the transform method to change this.
+
+    When transform is given it will be applied on each file before appending to resulting array.
     """
     if file_name is None:
         files = [f for f in glob(os.path.join(*path.split("/"), "*"))]
@@ -66,15 +81,26 @@ def load_bulk(path, file_name=None, transform=lambda x: x):
     result = []
     for f in files:
         with open(f) as current:
-            result.append(json.load(current))
-    return [transform(t) for t in result]
+            result.append(transform(current))
+    return result
 
 
 def load_arrays(path, file_name=None, transform=lambda x: x):
+    """
+    Load all the files in path or just one file if file_name is given and then flatten all of 
+    the arrays found into one resulting array. Applies transform method at the end to each entry.
+    """
     # just flatten the array of arrays coming from load_bulk and apply transform
     return [
         transform(item) for sublist in load_bulk(path, file_name) for item in sublist
     ]
+
+
+def load(path, file_name, transform=lambda x: x):
+    """
+    Loads one object in the given path + file_name and applies transform to it if given.
+    """
+    return load_bulk(path, file_name, transform)[0]
 
 
 def save_level_info(level_info):
