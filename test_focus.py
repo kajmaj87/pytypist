@@ -1,6 +1,6 @@
 import pytest
 
-from focus import focus, weights, calculate_main_focus, calculate_secondary_focus
+from focus import focus, weights, calculate_secondary_focus
 
 
 def test_main_focus():
