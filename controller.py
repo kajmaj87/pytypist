@@ -3,7 +3,8 @@ from level_controller import LevelController
 from key_logger import KeyLogger
 from transition_aggregator import TransitionAggregator
 from generators import FrequencyBasedGenerator
-from files import lazy_load_dict, save_transitions, load_transitions
+from transition_repository import save_transitions, load_transitions
+from files import lazy_load_dict
 from focus import (
     focus,
     calculate_main_focus_transitions,

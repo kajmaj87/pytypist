@@ -3,10 +3,8 @@ import os
 import log
 from glob import glob
 import json
-from entities import Transition
 from datetime import datetime
 
-transition_path = "stats/transitions"
 level_info_path = "stats"
 
 
@@ -44,22 +42,32 @@ def prepare_directory(path):
         os.makedirs(path)
 
 
-def save_transitions(transitions):
-    def current_timestamp():
-        return str(round(datetime.now().timestamp()))
-
-    prepare_directory(transition_path)
-    with open(os.path.join(transition_path, current_timestamp()), "w") as f:
-        json.dump(transitions, f, indent=2)
+def current_timestamp():
+    return str(round(datetime.now().timestamp()))
 
 
-def load_transitions():
-    files = [f for f in glob(os.path.join(*transition_path.split("/"), "*"))]
-    transitions = []
+def save(obj, path, file_name=current_timestamp()):
+    prepare_directory(path)
+    with open(os.path.join(path, file_name), "w") as f:
+        json.dump(obj, f, indent=2)
+
+
+def load_array(path, file_name=None, transform=lambda x: x):
+    """
+    Loads all the the files in given path or just one file if file_name is not ommited and 
+    then packs merges each array found into one array.
+
+    When transform is given it will be applied on each object after finishing
+    """
+    if file_name is None:
+        files = [f for f in glob(os.path.join(*path.split("/"), "*"))]
+    else:
+        files = [os.path.joint(path, file_name)]
+    result = []
     for f in files:
         with open(f) as current:
-            transitions.extend(json.load(current))
-    return [Transition(t[0], t[1], t[2], t[3]) for t in transitions]
+            result.extend(json.load(current))
+    return [transform(t) for t in result]
 
 
 def save_level_info(level_info):
