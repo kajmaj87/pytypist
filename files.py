@@ -74,4 +74,4 @@ def load_level_info(default):
             return json.load(f)
     except:
         log.warn("Couldn't load level file, returning default level {}".format(default))
-        return default
+        return {"level": default}
