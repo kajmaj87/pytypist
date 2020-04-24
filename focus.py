@@ -4,7 +4,7 @@ from collections import defaultdict
 from transition_aggregator import TransitionAggregator
 
 
-def calculate_main_focus(errors, threshold=1):
+def pick_letters_from_errors(errors, total, threshold=1):
     candidates_squared = [
         [e] * errors.count(e)
         for e in errors.replace(" ", "")
@@ -12,7 +12,7 @@ def calculate_main_focus(errors, threshold=1):
     ]
     candidates = [item for sublist in candidates_squared for item in sublist]
     candidates.append("")
-    return random.choice(candidates)
+    return "".join(random.choices(population=candidates, k=total))
 
 
 def calculate_main_focus_transitions(transitions):
@@ -29,6 +29,10 @@ def calculate_secondary_focus(keys, limit=5):
     log.debug(candidates)
     log.debug(sorted(keys.items(), key=lambda x: len(x[1])))
     return "".join(candidates[:limit])
+
+
+def calculate_secondary_focus_from_errors(errors, limit=5):
+    return pick_letters_from_errors(errors, limit)
 
 
 def focus(dictonary, main="", secondary=""):

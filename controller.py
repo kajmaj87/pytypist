@@ -6,12 +6,12 @@ from generators import FrequencyBasedGenerator
 from files import lazy_load_dict, save_transitions, load_transitions
 from focus import (
     focus,
-    calculate_main_focus,
     calculate_main_focus_transitions,
     calculate_secondary_focus,
+    calculate_secondary_focus_from_errors,
 )
 
-MAX_TRANSITIONS = 5000
+MAX_TRANSITIONS = 50000
 zen_mode = False
 
 
@@ -87,8 +87,8 @@ class Controller:
             worst_value,
             focus_type,
         ) = self.level_controller.main_focus_for_level(transitions)
-        secondary_focus = calculate_secondary_focus(
-            self.aggregator.key_stats(transitions, lambda x: x.state == "CORRECT"), 10
+        secondary_focus = calculate_secondary_focus_from_errors(
+            self.aggregator.last_errors(transitions)
         )
         self.generator = FrequencyBasedGenerator(
             focus(

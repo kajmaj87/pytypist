@@ -53,12 +53,29 @@ def save_transitions(transitions):
         json.dump(transitions, f, indent=2)
 
 
-def load_transitions():
+def load_transitions(char_limit=100):
     files = [f for f in glob(os.path.join(*transition_path.split("/"), "*"))]
     transitions = []
-    for f in files:
+    letters = defaultdict(int)
+    for f in reversed(files):  # read newest files first
         with open(f) as current:
-            transitions.extend(json.load(current))
+            new = json.load(current)
+            only_ending = [t[1] for t in new if t[2] == "CORRECT"]
+            new_letters = defaultdict(int)
+            new_letters.update({t: only_ending.count(t) for t in only_ending})
+            log.debug("New letters found: {}".format(new_letters))
+            transitions.extend(new)
+            letters.update(
+                {
+                    k: letters[k] + new_letters[k]
+                    for k in letters.keys() | new_letters.keys()
+                }
+            )
+            log.debug("All letters so far: {}".format(letters))
+
+        # end early if read enough
+        if all([v > char_limit for v in letters.values()]):
+            return [Transition(t[0], t[1], t[2], t[3]) for t in transitions]
     return [Transition(t[0], t[1], t[2], t[3]) for t in transitions]
 
 
