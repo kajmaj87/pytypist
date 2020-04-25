@@ -6,8 +6,6 @@ import json
 from datetime import datetime
 from util import flatten
 
-level_info_path = "stats"
-
 
 def prepare_directory(path):
     if not os.path.exists(path):
@@ -77,18 +75,3 @@ def load(path, file_name):
     You can also provide full path to file instead.
     """
     return load_bulk(path, file_name)[0]
-
-
-def save_level_info(level_info):
-    prepare_directory(level_info_path)
-    with open(os.path.join(level_info_path, "level.info"), "w") as f:
-        json.dump(level_info, f)
-
-
-def load_level_info(default):
-    try:
-        with open(os.path.join(level_info_path, "level.info"), "r") as f:
-            return json.load(f)
-    except:
-        log.warn("Couldn't load level file, returning default level {}".format(default))
-        return {"level": default}

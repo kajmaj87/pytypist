@@ -2,7 +2,7 @@ import log
 from transition_aggregator import TransitionAggregator
 from statistics import mean
 from generators import sanitize  # TODO move to this class
-from files import load_level_info, save_level_info
+from game_state import save_level_info, load_level_info
 
 
 min_occurences = 20
