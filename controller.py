@@ -4,7 +4,7 @@ from key_logger import KeyLogger
 from transition_aggregator import TransitionAggregator
 from generators import FrequencyBasedGenerator
 from transition_repository import save_transitions, load_transitions
-from files import lazy_load_dict
+from dictionaries import lazy_load_dict
 from focus import (
     focus,
     calculate_main_focus_transitions,
@@ -22,7 +22,7 @@ class Controller:
         self.aggregator = TransitionAggregator()
         self.level_controller = LevelController(
             lazy_load_dict(
-                "data/pl-sci-fi.dict", "data/dictionaries", lambda x: x.lower()
+                "data", "pl-sci-fi.dict", "data/dictionaries", lambda x: x.lower()
             )
         )
         self.generator = FrequencyBasedGenerator(

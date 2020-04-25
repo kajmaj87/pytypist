@@ -4,42 +4,18 @@ import log
 from glob import glob
 import json
 from datetime import datetime
+from util import flatten
 
 level_info_path = "stats"
-
-
-def create_dict(path):
-    """
-    Creates a dictonary with word frequency based from all files in path
-    """
-    d = defaultdict(int)
-    log.debug("Starting dictionary processing")
-    for file_path in glob(os.path.join(*path.split("/"), "*")):
-        with open(file_path) as fp:
-            for line in fp:
-                line = fp.readline()
-                tokens = line.split()
-                for t in tokens:
-                    d[t] += 1
-    log.debug("Done dictonary procesing")
-    return d
-
-
-def lazy_load_dict(dict_path, source_path, mapper=lambda x: x):
-    if os.path.exists(dict_path):
-        log.debug("Loading precalculated dictionary.")
-        with open(dict_path, "r") as f:
-            dictionary = json.load(f)
-    else:
-        dictionary = create_dict(source_path)
-        with open(dict_path, "w") as f:
-            json.dump(dictionary, f)
-    return {mapper(k): v for k, v in dictionary.items()}
 
 
 def prepare_directory(path):
     if not os.path.exists(path):
         os.makedirs(path)
+
+
+def file_exists(path, file_path):
+    return os.path.exists(os.path.join(path, file_path))
 
 
 def current_timestamp():
@@ -56,13 +32,13 @@ def save(obj, path, file_name=current_timestamp()):
         json.dump(obj, f, indent=2)
 
 
-def load_raw(path, file_name, transform=lambda x: x):
+def load_raw(path, file_name=None, transform=lambda x: x):
     """
     Reads the given file into a list of strings optionally applying transform to each line.
     Returns an array of strings/or results from transform.
     """
     process_file = lambda f: [transform(line) for line in f]
-    return load_bulk(path, file_name, process_file)[0]
+    return load_bulk(path, file_name, process_file)
 
 
 def load_bulk(path, file_name=None, transform=lambda x: json.load(x)):
@@ -77,7 +53,9 @@ def load_bulk(path, file_name=None, transform=lambda x: json.load(x)):
     if file_name is None:
         files = [f for f in glob(os.path.join(*path.split("/"), "*"))]
     else:
-        files = [os.path.joint(path, file_name)]
+        files = [os.path.join(path, file_name)]
+
+    log.debug("Will load files: {}".format(files))
     result = []
     for f in files:
         with open(f) as current:
@@ -90,17 +68,15 @@ def load_arrays(path, file_name=None, transform=lambda x: x):
     Load all the files in path or just one file if file_name is given and then flatten all of 
     the arrays found into one resulting array. Applies transform method at the end to each entry.
     """
-    # just flatten the array of arrays coming from load_bulk and apply transform
-    return [
-        transform(item) for sublist in load_bulk(path, file_name) for item in sublist
-    ]
+    return list(map(transform, flatten(load_bulk(path, file_name))))
 
 
-def load(path, file_name, transform=lambda x: x):
+def load(path, file_name):
     """
-    Loads one object in the given path + file_name and applies transform to it if given.
+    Loads one file in the given path + file_name.
+    You can also provide full path to file instead.
     """
-    return load_bulk(path, file_name, transform)[0]
+    return load_bulk(path, file_name)[0]
 
 
 def save_level_info(level_info):
