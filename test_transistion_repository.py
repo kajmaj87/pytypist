@@ -1,11 +1,17 @@
 import pytest
 from transition_repository import limit
 from util_tests import prepare_stage, t
+from util import flatten
 
 
 def test_should_not_limit_when_too_high():
     stage = prepare_stage("aaa", "aaa")
     assert stage == limit(stage, 3)
+
+
+def test_that_correct_start_char_is_not_counted_towards_the_limit():
+    stages = flatten([prepare_stage("aa", "aa"), prepare_stage("aa", "aa")])
+    assert stages == limit(stages, 3)
 
 
 def test_should_limit_to_max_correct_chars():

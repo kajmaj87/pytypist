@@ -21,14 +21,18 @@ class TransitionAggregator:
         """
         result = defaultdict(list)
         current_time = 0
+        skipped_letters = ""
         for t in transitions:
             if t.start == "START":
+                skipped_letters += t.end
                 continue
             if t.state != "CORRECT":
                 current_time += t.time / 1000
             else:
                 result[t.end].append(current_time + t.time / 1000)
                 current_time = 0
+
+        log.debug("Skipped letters: {}".format("".join(sorted(skipped_letters))))
 
         return result
 

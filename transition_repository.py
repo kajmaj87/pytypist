@@ -30,12 +30,13 @@ def limit(transitions, max_chars):
             should_record_chars = counts[t.end] < max_chars
             log.debug("Will record: {} record: {}".format(should_record_chars, t))
         if should_record_chars:
-            if t.state == "CORRECT":
+            # we want max_count of measured letters, start is not measured
+            if t.state == "CORRECT" and t.start != "START":
                 counts[t.end] += 1
             result.insert(0, t)
         else:
             log.debug("Skipping record: {}".format(t))
-            log.debug("Counts {}".format(counts))
             skipped += 1
+    log.debug("Counts {}".format(sorted(counts.items(), key=lambda x: x[1])))
     log.debug("Skipped {} records when analysing transitions".format(skipped))
     return result
