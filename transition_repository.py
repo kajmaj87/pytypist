@@ -32,11 +32,10 @@ def limit(transitions, max_chars):
         if should_record_chars:
             if t.state == "CORRECT":
                 counts[t.end] += 1
-            # TODO can add in reverse order instead of reversing at the end!
-            result.append(t)
+            result.insert(0, t)
         else:
             log.debug("Skipping record: {}".format(t))
             log.debug("Counts {}".format(counts))
             skipped += 1
     log.debug("Skipped {} records when analysing transitions".format(skipped))
-    return list(reversed(result))
+    return result
