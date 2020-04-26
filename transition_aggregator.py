@@ -32,21 +32,21 @@ class TransitionAggregator:
 
         return result
 
-    def calculate_for_adjusted_keys(self, adjusted_key_stats, function, limit=0):
+    def calculate_for_adjusted_keys(self, adjusted_key_stats, function):
         return {
-            k: function(v[-limit:])
+            k: function(v)
             for k, v in sorted(
-                adjusted_key_stats.items(), key=lambda x: function(x[1][-limit:]),
+                adjusted_key_stats.items(), key=lambda x: function(x[1]),
             )
         }
 
-    def calculate_for_transitions(self, transitions, function, limit=0):
+    def calculate_for_transitions(self, transitions, function):
         return self.calculate_for_adjusted_keys(
-            self.adjusted_key_stats(transitions), function, limit
+            self.adjusted_key_stats(transitions), function
         )
 
-    def total_time_for_keys(self, transitions, limit=0):
-        return self.calculate_for_transitions(transitions, sum, limit)
+    def total_time_for_keys(self, transitions):
+        return self.calculate_for_transitions(transitions, sum)
 
     def count_for_keys(self, transitions):
         return self.calculate_for_transitions(transitions, len)
@@ -77,15 +77,18 @@ class TransitionAggregator:
             if v > 0
         }
 
-    def time_accuracy_for_keys(self, transitions, limit=0):
-        total = self.total_time_for_keys(transitions, limit)
-        error = self.total_error_time_for_keys(transitions, limit)
+    def time_accuracy_for_keys(self, transitions):
+        total = self.total_time_for_keys(transitions)
+        # TODO needs fixing. use normal error counting method without limit based on adjusted key stats?
+        error = self.total_error_time_for_keys(transitions)
         log.debug(
             "Counting time accuracy 1 - error/total: 1 - {}/{}".format(error, total)
         )
         return {k: (v - error[k]) / v if k in error else 1 for k, v in total.items()}
 
-    def total_error_time_for_keys(self, transitions, limit=0):
+    def total_error_time_for_keys(self, transitions):
+        # TODO rewrite this method, it should not take limit into account anymore with new transition system
+        limit = 100
         result = defaultdict(int)
         keypresses = defaultdict(int)
         last_correct_key = None

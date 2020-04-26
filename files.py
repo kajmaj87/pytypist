@@ -20,11 +20,16 @@ def current_timestamp():
     return str(round(datetime.now().timestamp()))
 
 
-def save(obj, path, file_name=current_timestamp()):
+def save(obj, path, file_name=None):
     """
     Saves the given object under the path + filename location. 
     If filename is ommited an unique name will be generated.
     """
+    if file_name is None:
+        file_name = current_timestamp()
+        log.debug("Genereting unique name for file to save: ".format(file_name))
+
+    log.debug("Saving file {}/{}".format(path, file_name))
     prepare_directory(path)
     with open(os.path.join(path, file_name), "w") as f:
         json.dump(obj, f, indent=2)
@@ -53,7 +58,7 @@ def load_bulk(path, file_name=None, transform=lambda x: json.load(x)):
     else:
         files = [os.path.join(path, file_name)]
 
-    log.debug("Will load files: {}".format(files))
+    log.debug("Will load {} files: {}".format(len(files), files))
     result = []
     for f in files:
         with open(f) as current:

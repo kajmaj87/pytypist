@@ -5,10 +5,9 @@ from generators import sanitize  # TODO move to this class
 from game_state import save_level_info, load_level_info
 
 
-min_occurences = 20
+min_occurences = 5
 min_wpm = 30
 min_accuracy = 0.8
-max_same_letter_count = 100
 
 
 def wpm(key_time_in_seconds):
@@ -53,17 +52,13 @@ class LevelController:
 
     def mean_wpm_for_keys(self, key_stats):
         return {
-            k: wpm(mean(v[-max_same_letter_count:]))
-            for k, v in key_stats.items()
-            if k in self.current_chars()
+            k: wpm(mean(v)) for k, v in key_stats.items() if k in self.current_chars()
         }
 
     def time_accuracy(self, transitions):
         return {
             k: v
-            for k, v in self.aggregator.time_accuracy_for_keys(
-                transitions, max_same_letter_count
-            ).items()
+            for k, v in self.aggregator.time_accuracy_for_keys(transitions).items()
             if k in self.current_chars()
         }
 

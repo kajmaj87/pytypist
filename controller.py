@@ -13,6 +13,7 @@ from focus import (
 )
 
 MAX_TRANSITIONS = 50000
+MAX_CORRECT_CHARS = 10
 zen_mode = False
 
 
@@ -60,7 +61,7 @@ class Controller:
                 self.output.write(focus_string)
                 self.output.write("\n\nKey stats:\n")
                 self.output.write(
-                    self.aggregator.summary(load_transitions()[-MAX_TRANSITIONS:])
+                    self.aggregator.summary(load_transitions(MAX_CORRECT_CHARS))
                 )
 
             # TODO this call is now redunant with write_stage method
@@ -89,7 +90,7 @@ class Controller:
             focus_type,
         ) = self.level_controller.main_focus_for_level(transitions)
         secondary_focus = calculate_secondary_focus_from_errors(
-            self.aggregator.last_errors(transitions)
+            self.aggregator.last_errors(transitions), limit=10
         )
         self.generator = FrequencyBasedGenerator(
             focus(
@@ -126,4 +127,4 @@ class Controller:
         if self.current_text == self.text:
             self.output.redraw()
             save_transitions(self.logger.transitions())
-            self.start_next_stage(load_transitions()[-MAX_TRANSITIONS:])
+            self.start_next_stage(load_transitions(MAX_CORRECT_CHARS))

@@ -1,7 +1,8 @@
 import pytest
+from util_tests import prepare_stage, t
 from pytest import approx
 from statistics import mean
-from key_logger import Transition
+from entities import Transition
 from transition_aggregator import KeyStat
 
 
@@ -139,21 +140,9 @@ def test_time_accuracy_for_keys_no_limit(ta):
     assert {"a": 1 / 3, "b": 1, "c": 1 / 5} == approx(ta.time_accuracy_for_keys(stages))
 
 
-def test_time_accuracy_for_keys_with_limit(ta):
-    stages = prepare_stage("0abcac", "0x<abxy<<cax<c")
-    # first keypress is never taken into account as it always has time == 0
-    assert {"a": 1, "b": 1, "c": 1 / 3} == approx(ta.time_accuracy_for_keys(stages, 1))
-
-
 def test_total_error_time_for_keys(ta):
     stages = prepare_stage("abca", "x<abxy<<ca", key_time=1000)
     assert {"a": 2, "c": 4} == ta.total_error_time_for_keys(stages)
-
-
-def test_total_error_time_for_keys_with_limit(ta):
-    stages = prepare_stage("abcac", "x<abxy<<cax<c", key_time=1000)
-    # only c is returned as last entries for a and b were both correct
-    assert {"c": 2} == ta.total_error_time_for_keys(stages, limit=1)
 
 
 def test_prepare_stage_onechar():
@@ -202,36 +191,3 @@ def test_prepare_stage_with_consecutive_typos_one_of_them_on_correct_place():
         t(s="ERASE", e="b", st="CORRECT", t=10),
         t(s="b", e="c", st="CORRECT", t=10),
     ]
-
-
-def prepare_stage(stage_text, written_text, delete_char="<", key_time=10):
-    first_key = True
-    result = []
-    char_in_text = 1
-    check_chars = (
-        lambda x, y: "CORRECT" if x == y else "ERASE" if l == delete_char else "ERROR"
-    )
-    transform_erase = lambda x: "ERASE" if x == delete_char else x
-    last_key = "START"
-    current_text = ""
-    for l in written_text:
-        if l == delete_char:
-            current_text = current_text[:-1]
-            state = "ERASE"
-        else:
-            current_text += l
-            if current_text == stage_text[:char_in_text]:
-                state = "CORRECT"
-                char_in_text += 1
-            else:
-                state = "ERROR"
-        result.append(
-            t(s=transform_erase(last_key), e=transform_erase(l), st=state, t=key_time)
-        )
-        last_key = l
-
-    return result
-
-
-def t(s="", e="", st="", t=0):
-    return Transition(s, e, st, t)
