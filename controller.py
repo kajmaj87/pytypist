@@ -13,8 +13,8 @@ from focus import (
 )
 
 MAX_TRANSITIONS = 50000
-MAX_CORRECT_CHARS = 10
-zen_mode = False
+MAX_CORRECT_CHARS = 30
+zen_mode = True
 
 
 class Controller:

@@ -1,3 +1,4 @@
+import log
 from files import save, load
 
 level_info_path = "stats"

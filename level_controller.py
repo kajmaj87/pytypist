@@ -5,9 +5,9 @@ from generators import sanitize  # TODO move to this class
 from game_state import save_level_info, load_level_info
 
 
-min_occurences = 5
+min_occurences = 10
 min_wpm = 30
-min_accuracy = 0.8
+min_accuracy = 0.9
 
 
 def wpm(key_time_in_seconds):
