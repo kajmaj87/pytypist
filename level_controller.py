@@ -1,13 +1,16 @@
 import log
 from transition_aggregator import TransitionAggregator
 from statistics import mean
-from generators import sanitize  # TODO move to this class
+from generators import (
+    sanitize,
+    increase_letter_probability,
+)  # TODO move to correct module?
 from game_state import save_level_info, load_level_info
 
 
 min_occurences = 10
 min_wpm = 30
-min_accuracy = 0.9
+min_accuracy = 0.8
 
 
 def wpm(key_time_in_seconds):
@@ -158,4 +161,6 @@ class LevelController:
         return self.chars_allowed[self.current_level - 1]
 
     def dictionary_for_current_level(self):
-        return sanitize(self.dictionary, self.current_chars())
+        return increase_letter_probability(
+            sanitize(self.dictionary, self.current_chars()), 0.25
+        )

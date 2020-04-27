@@ -35,20 +35,20 @@ def calculate_secondary_focus_from_errors(errors, limit=5):
     return pick_letters_from_errors(errors, limit)
 
 
-def focus(dictonary, main="", secondary=""):
-    def apply_main_letter(dictonary, main):
+def focus(dictionary, main="", secondary=""):
+    def apply_main_letter(dictionary, main):
         has_main_letter = lambda t: any([l in t for l in main]) or len(main) == 0
-        return {k: v for k, v in dictonary.items() if has_main_letter(k)}
+        return {k: v for k, v in dictionary.items() if has_main_letter(k)}
 
     log.info("Calculating focus for [{}] and [{}]".format(main, secondary))
-    main_dictionary = apply_main_letter(dictonary, main)
+    main_dictionary = apply_main_letter(dictionary, main)
     if len(main_dictionary) == 0:
         log.warn(
             "Dictonary is empty after applying main focus [{}]. Returning full dictionary.".format(
                 main
             )
         )
-        return dictonary
+        return dictionary
     letter_weights = weights(main_dictionary)
     log.debug(
         "Weights in main: {}".format(
@@ -84,12 +84,18 @@ def focus(dictonary, main="", secondary=""):
     return result
 
 
-def weights(dictonary):
+def weights(dictionary):
     letters = set()
     result = defaultdict(int)
-    total = sum([v for (k, v) in dictonary.items()])
-    for k in dictonary.keys():
+    total = sum([v for (k, v) in dictionary.items()])
+    for k in dictionary.keys():
         letters.update(list(k))
     for l in letters:
-        result[l] = sum([v for (k, v) in dictonary.items() if l in k])
+        result[l] = sum([v for (k, v) in dictionary.items() if l in k])
     return {k: v for k, v in sorted(result.items(), key=lambda item: -item[1])}
+
+
+def probabilities(dictionary):
+    w = weights(dictionary)
+    total = sum(w.values())
+    return {k: v / total for k, v in w.items()}

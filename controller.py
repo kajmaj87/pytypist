@@ -80,7 +80,7 @@ class Controller:
                 return min_lenght
 
         stage_lenght = calculate_stage_lenght(5, transitions)
-        log.debug("Stage lenght will be: {}".format(stage_lenght))
+        log.info("Stage lenght will be: {}".format(stage_lenght))
         self.current_text = ""
         self.n = 1
         self.level_controller.advance_to_next_level_if_possible(transitions)
