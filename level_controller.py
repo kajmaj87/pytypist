@@ -19,6 +19,7 @@ def wpm(key_time_in_seconds):
 
 
 class LevelController:
+    # TODO replace with automatic gathering from dictionary
     chars_allowed = [
         "aioenz",
         "rw",
