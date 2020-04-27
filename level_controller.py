@@ -47,6 +47,7 @@ class LevelController:
         self.dictionary = dictionary
         self.aggregator = TransitionAggregator()
         self.current_level = load_level_info(default=1)["level"]
+        self.current_dictionary = self.recalculate_dictionary()
 
     def occurences(self, key_stats):
         return {
@@ -114,6 +115,7 @@ class LevelController:
             self.current_level += 1
             save_level_info({"level": self.current_level})
             log.info("Advancing to level {}".format(self.current_level))
+            self.current_dictionary = self.recalculate_dictionary()
 
     def main_focus_for_level(self, transitions):
         log.debug(
@@ -160,7 +162,10 @@ class LevelController:
     def new_chars(self):
         return self.chars_allowed[self.current_level - 1]
 
-    def dictionary_for_current_level(self):
+    def recalculate_dictionary(self):
         return increase_letter_probability(
-            sanitize(self.dictionary, self.current_chars()), 0.25
+            sanitize(self.dictionary, self.current_chars()), 0.5
         )
+
+    def dictionary_for_current_level(self):
+        return self.current_dictionary
