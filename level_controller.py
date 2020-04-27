@@ -3,6 +3,7 @@ from transition_aggregator import TransitionAggregator
 from statistics import mean
 from generators import (
     sanitize,
+    probabilities,
     increase_letter_probability,
 )  # TODO move to correct module?
 from game_state import save_level_info, load_level_info
@@ -19,32 +20,57 @@ def wpm(key_time_in_seconds):
 
 class LevelController:
     chars_allowed = [
-        "asdflkjh",
-        "ru",
-        "ei",
-        "wo",
-        "qp",
-        "ty",
+        "aioenz",
+        "rw",
+        "cy",
+        "st",
+        "mp",
+        "dk",
+        "u.",
+        "l,",
+        "jb",
         "gh",
-        "vm",
-        "c,",
-        "x.",
-        "z/",
-        "bn",
-        "[]",
-        "'\\",
-        "-=",
-        "10",
-        "29",
-        "38",
-        "47",
-        "56",
+        "f-",
+        "?v",
+        "!:",
+        "x;",
+        "()",
+        '1"',
+        "2q",
+        "0]",
+        "[3",
+        "54",
+        "67",
+        "89",
+        "/'",
+        "=\\"
+        #        "asdflkjh",
+        #        "ru",
+        #        "ei",
+        #        "wo",
+        #        "qp",
+        #        "ty",
+        #        "gh",
+        #        "vm",
+        #        "c,",
+        #        "x.",
+        #        "z/",
+        #        "bn",
+        #        "[]",
+        #        "'\\",
+        #        "-=",
+        #        "10",
+        #        "29",
+        #        "38",
+        #        "47",
+        #        "56",
     ]
 
     from level_controller import wpm
 
     def __init__(self, dictionary):
         self.dictionary = dictionary
+        probabilities(dictionary)
         self.aggregator = TransitionAggregator()
         self.current_level = load_level_info(default=1)["level"]
         self.current_dictionary = self.recalculate_dictionary()

@@ -87,15 +87,19 @@ def focus(dictionary, main="", secondary=""):
 def weights(dictionary):
     letters = set()
     result = defaultdict(int)
-    total = sum([v for (k, v) in dictionary.items()])
+    total = sum([v for k, v in dictionary.items()])
     for k in dictionary.keys():
         letters.update(list(k))
     for l in letters:
-        result[l] = sum([v for (k, v) in dictionary.items() if l in k])
-    return {k: v for k, v in sorted(result.items(), key=lambda item: -item[1])}
+        result[l] = sum([v for k, v in dictionary.items() if l in k])
+    sorted_result = {k: v for k, v in sorted(result.items(), key=lambda item: -item[1])}
+    log.debug("Letter probabilities: {}".format(sorted_result))
+    return sorted_result
 
 
 def probabilities(dictionary):
     w = weights(dictionary)
     total = sum(w.values())
-    return {k: v / total for k, v in w.items()}
+    result = {k: v / total for k, v in w.items()}
+    log.debug("Letter probabilities: {}".format(result))
+    return result
