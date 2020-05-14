@@ -1,3 +1,4 @@
+from timeit import default_timer as timer
 from collections import defaultdict
 import os
 import log
@@ -53,16 +54,20 @@ def load_bulk(path, file_name=None, transform=lambda x: json.load(x)):
 
     When transform is given it will be applied on each file before appending to resulting array.
     """
+    start = timer()
     if file_name is None:
         files = [f for f in glob(os.path.join(*path.split("/"), "*"))]
     else:
         files = [os.path.join(path, file_name)]
 
-    log.debug("Will load {} files: {}".format(len(files), files))
+    log.debug("{}".format(files))
     result = []
     for f in files:
         with open(f) as current:
             result.append(transform(current))
+    log.info(
+        "Loading {} files took {:.1f}ms".format(len(files), 1000 * (timer() - start))
+    )
     return result
 
 
