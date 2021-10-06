@@ -11,7 +11,7 @@ from game_state import save_level_info, load_level_info
 
 min_occurences = 10
 min_wpm = 30
-min_accuracy = 0.8
+min_accuracy = 0.75
 
 
 def wpm(key_time_in_seconds):
