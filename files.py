@@ -62,8 +62,9 @@ def load_bulk(path, file_name=None, transform=lambda x: json.load(x)):
 
     log.debug("{}".format(files))
     result = []
-    for f in files:
+    for f in sorted(files):
         with open(f) as current:
+            log.debug("Opening file {}".format(f))
             result.append(transform(current))
     log.info(
         "Loading {} files took {:.1f}ms".format(len(files), 1000 * (timer() - start))
